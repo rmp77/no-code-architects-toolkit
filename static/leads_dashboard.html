@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Finder</title>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg:            #ECEEF5;
+      --surface:       #FFFFFF;
+      --sidebar-bg:    #0B1220;
+      --sidebar-surf:  #131E30;
+      --sidebar-text:  #6B83A4;
+      --sidebar-head:  #FFFFFF;
+      --accent:        #4361EE;
+      --accent-h:      #3150D9;
+      --accent-soft:   #EEF1FF;
+      --accent-txt:    #4361EE;
+      --text-1:        #111827;
+      --text-2:        #6B7280;
+      --text-3:        #9CA3AF;
+      --border:        #E5E7EB;
+      --left-bg:       #F7F8FC;
+      --ok:            #059669;
+      --ok-bg:         #ECFDF5;
+      --warn:          #D97706;
+      --shadow:        0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #080D1A;
+        --surface:      #0E1524;
+        --sidebar-bg:   #050A14;
+        --sidebar-surf: #0B1220;
+        --sidebar-text: #4A6080;
+        --sidebar-head: #E8EEFF;
+        --accent-soft:  #131D42;
+        --accent-txt:   #7B98FF;
+        --text-1:       #E4EAFF;
+        --text-2:       #6B83A4;
+        --text-3:       #3A4F6A;
+        --border:       #182238;
+        --left-bg:      #0B1220;
+        --ok-bg:        #022C22;
+        --shadow:       0 1px 3px rgba(0,0,0,.5);
+      }
+    }
+
+    :root[data-theme="light"] {
+      --bg:#ECEEF5; --surface:#FFF; --sidebar-bg:#0B1220; --sidebar-surf:#131E30;
+      --sidebar-text:#6B83A4; --sidebar-head:#FFF; --accent-soft:#EEF1FF; --accent-txt:#4361EE;
+      --text-1:#111827; --text-2:#6B7280; --text-3:#9CA3AF;
+      --border:#E5E7EB; --left-bg:#F7F8FC; --ok-bg:#ECFDF5; --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+    }
+    :root[data-theme="dark"] {
+      --bg:#080D1A; --surface:#0E1524; --sidebar-bg:#050A14; --sidebar-surf:#0B1220;
+      --sidebar-text:#4A6080; --sidebar-head:#E8EEFF; --accent-soft:#131D42; --accent-txt:#7B98FF;
+      --text-1:#E4EAFF; --text-2:#6B83A4; --text-3:#3A4F6A;
+      --border:#182238; --left-bg:#0B1220; --ok-bg:#022C22; --shadow:0 1px 3px rgba(0,0,0,.5);
+    }
+
+    /* ── RESET ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      background: var(--bg); color: var(--text-1);
+      display: flex; overflow: hidden;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────────── */
+    .sidebar {
+      width: 268px; min-width: 268px; height: 100vh;
+      background: var(--sidebar-bg);
+      padding: 26px 20px;
+      display: flex; flex-direction: column; gap: 0;
+      overflow-y: auto;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+    .logo-mark {
+      width: 30px; height: 30px; border-radius: 7px;
+      background: var(--accent); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 16px; height: 16px; }
+    .logo-name { font-size: 15px; font-weight: 700; color: var(--sidebar-head); letter-spacing: -.02em; }
+
+    .form-label {
+      display: block; font-size: 11px; font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: var(--sidebar-text); margin-bottom: 7px;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-input {
+      width: 100%; background: var(--sidebar-surf);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 8px;
+      padding: 9px 12px; color: var(--sidebar-head);
+      font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color .15s;
+    }
+    .form-input::placeholder { color: rgba(255,255,255,.18); }
+    .form-input:focus { border-color: var(--accent); }
+
+    .presets { display: flex; gap: 7px; margin-bottom: 8px; }
+    .preset-btn {
+      flex: 1; padding: 8px 0; text-align: center;
+      background: var(--sidebar-surf);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 8px;
+      color: var(--sidebar-text); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+    }
+    .preset-btn:hover { color: #fff; border-color: rgba(255,255,255,.2); }
+    .preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .custom-limit-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .custom-limit-label { font-size: 11px; color: var(--sidebar-text); white-space: nowrap; }
+    .custom-limit-input {
+      width: 60px; background: var(--sidebar-surf);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 6px;
+      padding: 5px 8px; color: var(--sidebar-head);
+      font-size: 13px; font-family: inherit; outline: none;
+      text-align: center;
+    }
+    .custom-limit-input:focus { border-color: var(--accent); }
+
+    .search-btn {
+      width: 100%; background: var(--accent); color: #fff;
+      border: none; border-radius: 9px; padding: 11px 16px;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; margin-top: 6px; display: flex;
+      align-items: center; justify-content: center; gap: 8px;
+      transition: background .15s, transform .1s;
+    }
+    .search-btn:hover { background: var(--accent-h); }
+    .search-btn:active { transform: scale(.98); }
+    .search-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .sidebar-stats {
+      margin-top: auto; padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .stat-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 9px;
+    }
+    .stat-label { font-size: 12px; color: var(--sidebar-text); }
+    .stat-val {
+      font-size: 13px; font-weight: 700; color: var(--sidebar-head);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-query {
+      font-size: 11px; color: var(--sidebar-text);
+      word-break: break-word; margin-top: -4px; margin-bottom: 9px;
+      line-height: 1.4;
+    }
+
+    /* ── MAIN ────────────────────────────────────────────── */
+    .main { flex: 1; height: 100vh; overflow-y: auto; padding: 32px 36px; }
+
+    /* ── EMPTY ───────────────────────────────────────────── */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; text-align: center;
+      max-width: 380px; margin: 0 auto;
+    }
+    .empty-icon {
+      width: 60px; height: 60px; border-radius: 14px;
+      background: var(--accent-soft); margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .empty-state h2 { font-size: 19px; font-weight: 700; margin-bottom: 8px; text-wrap: balance; }
+    .empty-state p { font-size: 14px; color: var(--text-2); line-height: 1.65; text-wrap: balance; }
+
+    /* ── LOADING ─────────────────────────────────────────── */
+    .loading-hdr { margin-bottom: 22px; }
+    .loading-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .loading-sub { font-size: 13px; color: var(--text-2); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .sk-card {
+      background: var(--surface); border-radius: 12px;
+      border: 1px solid var(--border);
+      display: grid; grid-template-columns: 248px 1fr;
+      overflow: hidden; margin-bottom: 14px;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .sk-left { background: var(--left-bg); padding: 22px 20px; border-right: 1px solid var(--border); }
+    .sk-right { padding: 22px 24px; }
+    .sk { background: var(--border); border-radius: 4px; margin-bottom: 10px; }
+
+    /* ── RESULTS HEADER ──────────────────────────────────── */
+    .results-hdr {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
+    }
+    .results-title { font-size: 19px; font-weight: 700; line-height: 1.2; }
+    .results-sub { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+    .export-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 13px; font-weight: 600; color: var(--text-1);
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; gap: 6px;
+      transition: border-color .15s, color .15s;
+    }
+    .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── LEAD CARD ───────────────────────────────────────── */
+    .lead-card {
+      background: var(--surface); border-radius: 12px;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      display: grid; grid-template-columns: 248px 1fr;
+      overflow: hidden; margin-bottom: 14px;
+      transition: box-shadow .15s;
+    }
+    .lead-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.09); }
+
+    /* Left panel */
+    .lead-left {
+      background: var(--left-bg); padding: 20px 18px;
+      border-right: 1px solid var(--border);
+    }
+    .co-name {
+      font-size: 15px; font-weight: 700; color: var(--text-1);
+      line-height: 1.3; margin-bottom: 5px;
+    }
+    .co-meta {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 7px; margin-bottom: 13px;
+    }
+    .rating { font-size: 12px; color: var(--text-2); }
+    .star { color: #F59E0B; }
+    .open-pill {
+      font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      padding: 2px 7px; border-radius: 10px;
+    }
+    .open-pill.open  { background: var(--ok-bg); color: var(--ok); }
+    .open-pill.closed { background: var(--border); color: var(--text-3); }
+
+    .co-phone {
+      font-size: 13px; font-weight: 500; color: var(--text-1);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 7px;
+    }
+    .co-phone .ico { color: var(--text-3); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+    .eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+    }
+
+    .contact-item { margin-bottom: 11px; }
+    .contact-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .contact-title { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    .no-contacts { font-size: 12px; color: var(--text-3); font-style: italic; }
+
+    /* Right panel */
+    .lead-right { padding: 20px 22px; }
+
+    .detail-block { display: grid; gap: 7px; margin-bottom: 13px; }
+    .detail-row {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 13px; color: var(--text-1);
+    }
+    .d-ico { flex-shrink: 0; color: var(--text-3); width: 16px; text-align: center; }
+    .detail-row a { color: var(--accent-txt); text-decoration: none; }
+    .detail-row a:hover { text-decoration: underline; }
+
+    .type-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .type-tag {
+      background: var(--accent-soft); color: var(--accent-txt);
+      font-size: 10px; font-weight: 700; letter-spacing: .03em;
+      padding: 3px 8px; border-radius: 4px; text-transform: capitalize;
+    }
+
+    .email-block { display: grid; gap: 9px; }
+    .email-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    .email-who { font-size: 12px; color: var(--text-2); min-width: 88px; }
+    .email-addr {
+      font-size: 12px; font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+      color: var(--text-1);
+    }
+    .verified-chip {
+      font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      color: var(--ok); background: var(--ok-bg);
+      padding: 2px 7px; border-radius: 10px;
+    }
+    .copy-btn {
+      font-size: 11px; color: var(--text-3); background: transparent;
+      border: 1px solid var(--border); border-radius: 5px;
+      padding: 2px 8px; cursor: pointer; font-family: inherit;
+      transition: color .12s, border-color .12s;
+    }
+    .copy-btn:hover { color: var(--accent-txt); border-color: var(--accent); }
+    .no-email { font-size: 12px; color: var(--text-3); font-style: italic; }
+
+    .hours-block { display: grid; gap: 3px; }
+    .hour-row { font-size: 12px; color: var(--text-2); }
+
+    /* ── ERROR ───────────────────────────────────────────── */
+    .error-box {
+      background: var(--surface); border: 1px solid #FCA5A5;
+      border-radius: 12px; padding: 18px 22px;
+      color: #DC2626; font-size: 14px; line-height: 1.6;
+    }
+
+    /* ── SCROLLBAR ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sk-card { animation: none; }
+      .search-btn, .export-btn, .copy-btn { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ───── SIDEBAR ───── -->
+<aside class="sidebar">
+
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="6.5" cy="6.5" r="4" stroke="white" stroke-width="1.5"/>
+        <line x1="9.5" y1="9.5" x2="13.5" y2="13.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-name">Lead Finder</span>
+  </div>
+
+  <form id="searchForm">
+    <div class="form-group">
+      <label class="form-label" for="businessType">What businesses?</label>
+      <input id="businessType" type="text" class="form-input"
+             placeholder="e.g. dentists, restaurants" autocomplete="off" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="location">What area?</label>
+      <input id="location" type="text" class="form-input"
+             placeholder="e.g. Miami, FL" autocomplete="off" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">How many leads?</label>
+      <div class="presets" id="presets">
+        <button type="button" class="preset-btn active" data-v="5">5</button>
+        <button type="button" class="preset-btn" data-v="10">10</button>
+        <button type="button" class="preset-btn" data-v="20">20</button>
+      </div>
+      <div class="custom-limit-row">
+        <span class="custom-limit-label">Custom:</span>
+        <input id="customLimit" type="number" class="custom-limit-input"
+               min="1" max="20" placeholder="—">
+      </div>
+    </div>
+
+    <button type="submit" class="search-btn" id="searchBtn">
+      <span id="btnLabel">Search Leads</span>
+    </button>
+  </form>
+
+  <div class="sidebar-stats" id="sidebarStats" style="display:none;">
+    <div class="stat-row">
+      <span class="stat-label">Leads found</span>
+      <span class="stat-val" id="sTotal">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">With contacts</span>
+      <span class="stat-val" id="sContacts">—</span>
+    </div>
+    <div class="stat-row" style="margin-bottom:4px;">
+      <span class="stat-label">Last search</span>
+    </div>
+    <div class="stat-query" id="sQuery"></div>
+  </div>
+
+</aside>
+
+<!-- ───── MAIN ───── -->
+<main class="main">
+
+  <!-- Empty -->
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h2>Find your next leads</h2>
+    <p>Search by business type and city to get phone numbers, websites, owner names, and verified contact emails — all in one place.</p>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingState" style="display:none;">
+    <div class="loading-hdr">
+      <div class="loading-title" id="loadingTitle">Searching Google Maps…</div>
+      <div class="loading-sub">Gathering and enriching results — this takes 10–25 seconds</div>
+    </div>
+    <div class="sk-card">
+      <div class="sk-left">
+        <div class="sk" style="height:16px;width:72%;"></div>
+        <div class="sk" style="height:11px;width:38%;margin-bottom:18px;"></div>
+        <div class="sk" style="height:13px;width:54%;"></div>
+        <div class="sk" style="height:1px;margin:14px 0;"></div>
+        <div class="sk" style="height:12px;width:60%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:45%;"></div>
+      </div>
+      <div class="sk-right">
+        <div class="sk" style="height:12px;width:80%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:50%;margin-bottom:18px;"></div>
+        <div class="sk" style="height:1px;margin-bottom:14px;"></div>
+        <div class="sk" style="height:12px;width:65%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:72%;"></div>
+      </div>
+    </div>
+    <div class="sk-card" style="animation-delay:.25s;">
+      <div class="sk-left">
+        <div class="sk" style="height:16px;width:60%;"></div>
+        <div class="sk" style="height:11px;width:30%;margin-bottom:18px;"></div>
+        <div class="sk" style="height:13px;width:60%;"></div>
+        <div class="sk" style="height:1px;margin:14px 0;"></div>
+        <div class="sk" style="height:12px;width:50%;"></div>
+      </div>
+      <div class="sk-right">
+        <div class="sk" style="height:12px;width:75%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:42%;margin-bottom:18px;"></div>
+        <div class="sk" style="height:1px;margin-bottom:14px;"></div>
+        <div class="sk" style="height:12px;width:58%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:66%;"></div>
+      </div>
+    </div>
+    <div class="sk-card" style="animation-delay:.5s;">
+      <div class="sk-left">
+        <div class="sk" style="height:16px;width:78%;"></div>
+        <div class="sk" style="height:11px;width:44%;margin-bottom:18px;"></div>
+        <div class="sk" style="height:13px;width:48%;"></div>
+      </div>
+      <div class="sk-right">
+        <div class="sk" style="height:12px;width:88%;margin-bottom:7px;"></div>
+        <div class="sk" style="height:12px;width:36%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsArea" style="display:none;">
+    <div class="results-hdr">
+      <div>
+        <div class="results-title" id="resultsTitle"></div>
+        <div class="results-sub" id="resultsSub"></div>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+    </div>
+    <div id="leadsList"></div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorState" style="display:none;" class="error-box"></div>
+
+</main>
+
+<script>
+  /* ── STATE ─────────────────────────────────────── */
+  let leads = [];
+  let chosenLimit = 5;
+
+  /* ── PRESET BUTTONS ─────────────────────────────── */
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      chosenLimit = parseInt(btn.dataset.v);
+      document.getElementById('customLimit').value = '';
+    });
+  });
+
+  document.getElementById('customLimit').addEventListener('input', function () {
+    if (this.value) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      chosenLimit = Math.min(parseInt(this.value) || 5, 20);
+    }
+  });
+
+  /* ── FORM SUBMIT ────────────────────────────────── */
+  document.getElementById('searchForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const bt = document.getElementById('businessType').value.trim();
+    const loc = document.getElementById('location').value.trim();
+    if (!bt || !loc) return;
+    await doSearch(bt, loc, chosenLimit);
+  });
+
+  /* ── SEARCH ─────────────────────────────────────── */
+  async function doSearch(bt, loc, limit) {
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    document.getElementById('btnLabel').textContent = 'Searching…';
+
+    show('loading');
+
+    const msgs = [
+      'Searching Google Maps…',
+      `Finding ${bt} in ${loc}…`,
+      'Gathering contact data…',
+      'Validating emails…',
+      'Almost done…'
+    ];
+    let mi = 0;
+    const ticker = setInterval(() => {
+      mi = (mi + 1) % msgs.length;
+      const el = document.getElementById('loadingTitle');
+      if (el) el.textContent = msgs[mi];
+    }, 3500);
+
+    try {
+      const res = await fetch('/leads/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_type: bt, location: loc, limit })
+      });
+      const data = await res.json();
+      clearInterval(ticker);
+      if (!res.ok) throw new Error(data.error || 'Search failed');
+      leads = data.leads || [];
+      renderResults(data);
+    } catch (err) {
+      clearInterval(ticker);
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btnLabel').textContent = 'Search Leads';
+    }
+  }
+
+  /* ── SHOW STATE ─────────────────────────────────── */
+  function show(state) {
+    ['emptyState','loadingState','resultsArea','errorState'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    const map = { empty:'emptyState', loading:'loadingState', results:'resultsArea', error:'errorState' };
+    if (map[state]) document.getElementById(map[state]).style.display = '';
+  }
+
+  function showError(msg) {
+    document.getElementById('errorState').textContent = 'Error: ' + msg;
+    show('error');
+  }
+
+  /* ── RENDER RESULTS ─────────────────────────────── */
+  function renderResults(data) {
+    const { leads: ls, total, contacts_found, query } = data;
+
+    document.getElementById('sTotal').textContent = total;
+    document.getElementById('sContacts').textContent = contacts_found || 0;
+    document.getElementById('sQuery').textContent = query;
+    document.getElementById('sidebarStats').style.display = '';
+
+    document.getElementById('resultsTitle').textContent =
+      total + ' lead' + (total !== 1 ? 's' : '') + ' found';
+    document.getElementById('resultsSub').textContent = query;
+
+    document.getElementById('leadsList').innerHTML = ls.map(renderCard).join('');
+    show('results');
+  }
+
+  /* ── RENDER CARD ────────────────────────────────── */
+  function renderCard(lead) {
+    const contacts = lead.contacts || [];
+
+    /* ─ left ─ */
+    const ratingHtml = lead.rating
+      ? `<span class="rating"><span class="star">★</span> ${lead.rating} <span style="color:var(--text-3)">(${(lead.total_ratings||0).toLocaleString()})</span></span>`
+      : '';
+
+    const openHtml = (lead.open_now !== null && lead.open_now !== undefined)
+      ? `<span class="open-pill ${lead.open_now ? 'open' : 'closed'}">${lead.open_now ? 'OPEN' : 'CLOSED'}</span>`
+      : '';
+
+    const phoneHtml = lead.phone
+      ? `<div class="co-phone"><span class="ico">📞</span>${h(lead.phone)}</div>`
+      : '';
+
+    const namesHtml = contacts.length
+      ? contacts.map(c => `
+          <div class="contact-item">
+            <div class="contact-name">${h(c.first_name||'')} ${h(c.last_name||'')}</div>
+            ${c.position ? `<div class="contact-title">${h(c.position)}</div>` : ''}
+          </div>`).join('')
+      : '<div class="no-contacts">No contacts found</div>';
+
+    /* ─ right ─ */
+    const addrHtml = lead.address
+      ? `<div class="detail-row"><span class="d-ico">📍</span><span>${h(lead.address)}</span></div>`
+      : '';
+
+    const webHtml = lead.website
+      ? `<div class="detail-row"><span class="d-ico">🌐</span><a href="${a(lead.website)}" target="_blank" rel="noopener">${h(lead.website.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a></div>`
+      : '';
+
+    const statusColor = lead.business_status === 'OPERATIONAL' ? 'var(--ok)' : 'var(--text-2)';
+    const statusHtml = lead.business_status
+      ? `<div class="detail-row"><span class="d-ico">◉</span><span style="color:${statusColor}">${h(lead.business_status.replace(/_/g,' '))}</span></div>`
+      : '';
+
+    const tags = (lead.types||[]).slice(0,5);
+    const tagsHtml = tags.length
+      ? `<div class="type-tags">${tags.map(t=>`<span class="type-tag">${t.replace(/_/g,' ')}</span>`).join('')}</div>`
+      : '';
+
+    let emailsHtml = '';
+    if (contacts.length) {
+      const items = contacts.map(c => {
+        const verf = c.verification_status === 'valid'
+          ? '<span class="verified-chip">✓ Verified</span>' : '';
+        const emailPart = c.email
+          ? `<span class="email-addr">${h(c.email)}</span>${verf}<button class="copy-btn" onclick="copyIt(${JSON.stringify(c.email)},this)">Copy</button>`
+          : '<span class="no-email">Email not found</span>';
+        return `<div class="email-entry">
+          <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}</span>
+          ${emailPart}
+        </div>`;
+      }).join('');
+      emailsHtml = `<hr class="divider"><div class="eyebrow">Contact Emails</div><div class="email-block">${items}</div>`;
+    }
+
+    let hoursHtml = '';
+    if (lead.hours && lead.hours.length) {
+      hoursHtml = `<hr class="divider"><div class="eyebrow">Business Hours</div>
+        <div class="hours-block">${lead.hours.map(r=>`<div class="hour-row">${h(r)}</div>`).join('')}</div>`;
+    }
+
+    return `
+    <article class="lead-card">
+      <div class="lead-left">
+        <h2 class="co-name">${h(lead.name||'Unknown')}</h2>
+        <div class="co-meta">${ratingHtml}${openHtml}</div>
+        ${phoneHtml}
+        <hr class="divider">
+        <div class="eyebrow">Contacts</div>
+        ${namesHtml}
+      </div>
+      <div class="lead-right">
+        <div class="detail-block">
+          ${addrHtml}${webHtml}${statusHtml}
+        </div>
+        ${tagsHtml}
+        ${emailsHtml}
+        ${hoursHtml}
+      </div>
+    </article>`;
+  }
+
+  /* ── COPY ───────────────────────────────────────── */
+  function copyIt(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.color = 'var(--ok)';
+      btn.style.borderColor = 'var(--ok)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 1500);
+    });
+  }
+
+  /* ── EXPORT ─────────────────────────────────────── */
+  function exportCSV() {
+    if (!leads.length) return;
+    const cols = ['Company','Phone','Website','Address','Rating','Status','Contact Name','Title','Email','Verified'];
+    const rows = [cols];
+    leads.forEach(l => {
+      const cs = l.contacts || [];
+      if (!cs.length) {
+        rows.push([l.name||'',l.phone||'',l.website||'',l.address||'',l.rating||'',l.business_status||'','','','','']);
+      } else {
+        cs.forEach(c => {
+          rows.push([
+            l.name||'',l.phone||'',l.website||'',l.address||'',
+            l.rating||'',l.business_status||'',
+            ((c.first_name||'')+' '+(c.last_name||'')).trim(),
+            c.position||'', c.email||'',
+            c.verification_status === 'valid' ? 'Yes' : 'No'
+          ]);
+        });
+      }
+    });
+    const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'leads-' + Date.now() + '.csv';
+    a.click();
+  }
+
+  /* ── UTILS ──────────────────────────────────────── */
+  function h(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function a(s) {
+    return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+</script>
+</body>
+</html>
