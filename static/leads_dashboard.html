@@ -751,7 +751,8 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Export failed');
-      labelEl.textContent = `✓ ${data.pushed} sent`;
+      const dupNote = data.duplicates > 0 ? `, ${data.duplicates} already in CRM` : '';
+      labelEl.textContent = `✓ ${data.pushed} sent${dupNote}`;
       btnEl.style.color = 'var(--ok)';
       btnEl.style.borderColor = 'var(--ok)';
       setTimeout(() => {

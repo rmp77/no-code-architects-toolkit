@@ -58,14 +58,20 @@ def monday_export():
         results = []
         for lead in leads:
             try:
-                item_id = push_lead(board_id, col_ids, lead, token)
-                results.append({"name": lead.get("name"), "item_id": item_id, "ok": True})
+                item_id, status = push_lead(board_id, col_ids, lead, token)
+                results.append({"name": lead.get("name"), "status": status, "item_id": item_id, "ok": True})
             except Exception as e:
                 logger.warning(f"Failed to push lead '{lead.get('name')}': {e}")
-                results.append({"name": lead.get("name"), "ok": False, "error": str(e)})
+                results.append({"name": lead.get("name"), "status": "error", "ok": False, "error": str(e)})
 
-        pushed = sum(1 for r in results if r["ok"])
-        return jsonify({"pushed": pushed, "total": len(leads), "results": results}), 200
+        pushed     = sum(1 for r in results if r.get("status") == "created")
+        duplicates = sum(1 for r in results if r.get("status") == "duplicate")
+        return jsonify({
+            "pushed": pushed,
+            "duplicates": duplicates,
+            "total": len(leads),
+            "results": results
+        }), 200
     except Exception as e:
         logger.error(f"Monday.com export failed: {e}")
         return jsonify({"error": str(e)}), 500

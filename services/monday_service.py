@@ -1,3 +1,4 @@
+import json
 import requests
 import logging
 
@@ -17,6 +18,7 @@ COLUMN_DEFS = [
     ("Email",          "email"),
     ("Email Verified", "text"),
     ("Source",         "text"),
+    ("Place ID",       "text"),  # unique key used to detect duplicates
 ]
 
 
@@ -24,7 +26,11 @@ def _gql(query, variables, token):
     r = requests.post(
         MONDAY_API,
         json={"query": query, "variables": variables},
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "API-Version": "2024-01"},
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "API-Version": "2024-01"
+        },
         timeout=30
     )
     r.raise_for_status()
@@ -76,6 +82,30 @@ def _create_column(board_id, title, col_type, token):
     return data["create_column"]["id"]
 
 
+def _already_exists(board_id, place_id_col_id, place_id, token):
+    """Returns True if a lead with this place_id is already on the board."""
+    if not place_id or not place_id_col_id:
+        return False
+    q = """
+    query($board_id: ID!, $col_id: String!, $val: String!) {
+      items_page_by_column_values(limit: 1, board_id: $board_id,
+        columns: [{column_id: $col_id, column_values: [$val]}]) {
+        items { id }
+      }
+    }"""
+    try:
+        data = _gql(q, {
+            "board_id": str(board_id),
+            "col_id": place_id_col_id,
+            "val": place_id
+        }, token)
+        items = data.get("items_page_by_column_values", {}).get("items", [])
+        return len(items) > 0
+    except Exception as e:
+        logger.warning(f"Duplicate check failed for place_id {place_id}: {e}")
+        return False
+
+
 def get_or_create_board(workspace_id, token):
     """Returns (board_id, column_id_map). Creates board and columns if needed."""
     board_id = _find_board(workspace_id, token)
@@ -99,12 +129,20 @@ def get_or_create_board(workspace_id, token):
 
 
 def push_lead(board_id, col_ids, lead, token):
-    """Creates one Monday.com item from a lead dict. Returns the new item id."""
+    """
+    Creates one Monday.com item from a lead dict.
+    Returns (item_id, 'created') or (None, 'duplicate') if it already exists.
+    """
+    place_id = lead.get("place_id", "")
+
+    # Deduplicate: skip if this place_id is already on the board
+    if _already_exists(board_id, col_ids.get("Place ID"), place_id, token):
+        logger.info(f"Skipping duplicate lead: {lead.get('name')} ({place_id})")
+        return None, "duplicate"
+
     contacts = lead.get("contacts") or []
     primary = contacts[0] if contacts else {}
-
     contact_name = f"{primary.get('first_name','')} {primary.get('last_name','')}".strip()
-    all_emails = ", ".join(c.get("email","") for c in contacts if c.get("email"))
 
     col_vals = {}
 
@@ -120,24 +158,26 @@ def push_lead(board_id, col_ids, lead, token):
 
     website = lead.get("website", "")
     if website and col_ids.get("Website"):
-        col_vals[col_ids["Website"]] = {"url": website, "text": website.replace("https://","").replace("http://","").rstrip("/")}
+        col_vals[col_ids["Website"]] = {
+            "url": website,
+            "text": website.replace("https://", "").replace("http://", "").rstrip("/")
+        }
 
-    set_col("Address",        lead.get("address", ""))
-    set_col("Rating",         str(lead.get("rating", "")) if lead.get("rating") else "")
-    set_col("Business Status",lead.get("business_status", "").replace("_"," "))
-    set_col("Contact Name",   contact_name)
-    set_col("Contact Title",  primary.get("position", ""))
-    set_col("Source",         "Lead Finder")
+    set_col("Address",         lead.get("address", ""))
+    set_col("Rating",          str(lead.get("rating")) if lead.get("rating") else "")
+    set_col("Business Status", lead.get("business_status", "").replace("_", " "))
+    set_col("Contact Name",    contact_name)
+    set_col("Contact Title",   primary.get("position", ""))
+    set_col("Source",          "Lead Finder")
+    set_col("Place ID",        place_id)
 
-    if all_emails and col_ids.get("Email"):
-        first_email = contacts[0].get("email","") if contacts else ""
-        if first_email:
-            col_vals[col_ids["Email"]] = {"email": first_email, "text": first_email}
+    if contacts and contacts[0].get("email") and col_ids.get("Email"):
+        e = contacts[0]["email"]
+        col_vals[col_ids["Email"]] = {"email": e, "text": e}
 
-    verified = "Yes" if primary.get("verification_status") == "valid" else "No"
-    set_col("Email Verified", verified)
+    set_col("Email Verified",
+            "Yes" if primary.get("verification_status") == "valid" else "No")
 
-    import json
     q = """
     mutation($board_id: ID!, $name: String!, $col_vals: JSON!) {
       create_item(board_id: $board_id, item_name: $name, column_values: $col_vals) { id }
@@ -147,4 +187,4 @@ def push_lead(board_id, col_ids, lead, token):
         "name": lead.get("name", "Unknown"),
         "col_vals": json.dumps(col_vals)
     }, token)
-    return data["create_item"]["id"]
+    return data["create_item"]["id"], "created"
