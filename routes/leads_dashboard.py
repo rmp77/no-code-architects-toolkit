@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.leads_service import run_leads_search
+from services.monday_service import get_or_create_board, push_lead
 import logging
 import os
 
@@ -37,4 +38,34 @@ def dashboard_search():
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Dashboard search failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@leads_dashboard_bp.route('/leads/monday', methods=['POST'])
+def monday_export():
+    data = request.get_json() or {}
+    leads = data.get('leads', [])
+    if not leads:
+        return jsonify({"error": "No leads provided"}), 400
+
+    token = os.environ.get('MONDAY_API_TOKEN')
+    workspace_id = os.environ.get('MONDAY_WORKSPACE_ID')
+    if not token or not workspace_id:
+        return jsonify({"error": "MONDAY_API_TOKEN or MONDAY_WORKSPACE_ID is not configured"}), 500
+
+    try:
+        board_id, col_ids = get_or_create_board(workspace_id, token)
+        results = []
+        for lead in leads:
+            try:
+                item_id = push_lead(board_id, col_ids, lead, token)
+                results.append({"name": lead.get("name"), "item_id": item_id, "ok": True})
+            except Exception as e:
+                logger.warning(f"Failed to push lead '{lead.get('name')}': {e}")
+                results.append({"name": lead.get("name"), "ok": False, "error": str(e)})
+
+        pushed = sum(1 for r in results if r["ok"])
+        return jsonify({"pushed": pushed, "total": len(leads), "results": results}), 200
+    except Exception as e:
+        logger.error(f"Monday.com export failed: {e}")
         return jsonify({"error": str(e)}), 500

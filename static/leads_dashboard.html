@@ -201,6 +201,7 @@
     }
     .results-title { font-size: 19px; font-weight: 700; line-height: 1.2; }
     .results-sub { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+    .hdr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .export-btn {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 14px;
@@ -210,6 +211,30 @@
       transition: border-color .15s, color .15s;
     }
     .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .monday-btn {
+      background: #F6F7FB; border: 1px solid #C8D0E0;
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 13px; font-weight: 600; color: #323338;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; gap: 7px;
+      transition: border-color .15s, background .15s;
+    }
+    .monday-btn:hover { border-color: #0073EA; background: #E8F3FF; color: #0073EA; }
+    .monday-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .monday-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #0073EA; flex-shrink: 0;
+    }
+    .card-monday-btn {
+      font-size: 11px; font-weight: 600; color: #0073EA;
+      background: #E8F3FF; border: 1px solid #B3D4F8;
+      border-radius: 5px; padding: 3px 9px;
+      cursor: pointer; font-family: inherit;
+      transition: background .12s;
+      white-space: nowrap;
+    }
+    .card-monday-btn:hover { background: #C8E2FC; }
+    .card-monday-btn:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ── LEAD CARD ───────────────────────────────────────── */
     .lead-card {
@@ -457,7 +482,13 @@
         <div class="results-title" id="resultsTitle"></div>
         <div class="results-sub" id="resultsSub"></div>
       </div>
-      <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+      <div class="hdr-actions">
+        <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+        <button class="monday-btn" id="mondayAllBtn" onclick="sendAllToMonday()">
+          <span class="monday-dot"></span>
+          <span id="mondayAllLabel">Export All to Monday.com</span>
+        </button>
+      </div>
     </div>
     <div id="leadsList"></div>
   </div>
@@ -637,8 +668,10 @@
         <div class="hours-block">${lead.hours.map(r=>`<div class="hour-row">${h(r)}</div>`).join('')}</div>`;
     }
 
+    const cardIdx = Math.random().toString(36).slice(2);
+
     return `
-    <article class="lead-card">
+    <article class="lead-card" id="card-${cardIdx}">
       <div class="lead-left">
         <h2 class="co-name">${h(lead.name||'Unknown')}</h2>
         <div class="co-meta">${ratingHtml}${openHtml}</div>
@@ -654,6 +687,11 @@
         ${tagsHtml}
         ${emailsHtml}
         ${hoursHtml}
+        <hr class="divider" style="margin-top:16px;">
+        <button class="card-monday-btn" id="mon-${cardIdx}"
+          onclick="sendOneToMonday(${JSON.stringify(JSON.stringify(lead))}, 'mon-${cardIdx}')">
+          ⬡ Send to Monday.com
+        </button>
       </div>
     </article>`;
   }
@@ -699,6 +737,54 @@
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = 'leads-' + Date.now() + '.csv';
     a.click();
+  }
+
+  /* ── MONDAY.COM ─────────────────────────────────── */
+  async function sendToMonday(leadsArr, btnEl, labelEl, originalLabel) {
+    btnEl.disabled = true;
+    labelEl.textContent = 'Sending…';
+    try {
+      const res = await fetch('/leads/monday', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: leadsArr })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Export failed');
+      labelEl.textContent = `✓ ${data.pushed} sent`;
+      btnEl.style.color = 'var(--ok)';
+      btnEl.style.borderColor = 'var(--ok)';
+      setTimeout(() => {
+        labelEl.textContent = originalLabel;
+        btnEl.style.color = '';
+        btnEl.style.borderColor = '';
+        btnEl.disabled = false;
+      }, 3000);
+    } catch (err) {
+      labelEl.textContent = '✗ Failed';
+      btnEl.style.color = '#DC2626';
+      btnEl.style.borderColor = '#DC2626';
+      setTimeout(() => {
+        labelEl.textContent = originalLabel;
+        btnEl.style.color = '';
+        btnEl.style.borderColor = '';
+        btnEl.disabled = false;
+      }, 3000);
+      console.error('Monday export error:', err.message);
+    }
+  }
+
+  function sendAllToMonday() {
+    if (!leads.length) return;
+    const btn = document.getElementById('mondayAllBtn');
+    const lbl = document.getElementById('mondayAllLabel');
+    sendToMonday(leads, btn, lbl, 'Export All to Monday.com');
+  }
+
+  function sendOneToMonday(leadJson, btnId) {
+    const lead = JSON.parse(leadJson);
+    const btn = document.getElementById(btnId);
+    sendToMonday([lead], btn, btn, '⬡ Send to Monday.com');
   }
 
   /* ── UTILS ──────────────────────────────────────── */
