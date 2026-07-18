@@ -225,6 +225,53 @@
       width: 8px; height: 8px; border-radius: 50%;
       background: #0073EA; flex-shrink: 0;
     }
+    .reachinbox-btn {
+      background: #F6F7FB; border: 1px solid #C8D0E0;
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 13px; font-weight: 600; color: #1a1a2e;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: border-color .15s, background .15s;
+    }
+    .reachinbox-btn:hover { border-color: #7C3AED; background: #F3EFFE; color: #7C3AED; }
+    .reachinbox-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .ri-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #7C3AED; flex-shrink: 0;
+    }
+    .card-ri-btn {
+      font-size: 11px; font-weight: 600; color: #7C3AED;
+      background: #F3EFFE; border: 1px solid #D4BBFC;
+      border-radius: 6px; padding: 5px 10px; cursor: pointer;
+      white-space: nowrap;
+    }
+    .card-ri-btn:hover { background: #E9D8FD; }
+    .card-ri-btn:disabled { opacity: .5; cursor: not-allowed; }
+    /* Campaign picker modal */
+    .ri-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .ri-modal-overlay.open { display: flex; }
+    .ri-modal {
+      background: var(--card-bg); border-radius: 12px;
+      padding: 28px; width: 380px; max-width: 95vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .ri-modal h3 { margin: 0 0 16px; font-size: 16px; }
+    .ri-modal select {
+      width: 100%; padding: 9px 12px; border-radius: 8px;
+      border: 1px solid #C8D0E0; font-size: 14px;
+      background: var(--card-bg); color: var(--text);
+      margin-bottom: 16px;
+    }
+    .ri-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .ri-modal-actions button {
+      padding: 8px 18px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; cursor: pointer; border: none;
+    }
+    .ri-modal-cancel { background: #E5E7EB; color: #374151; }
+    .ri-modal-send { background: #7C3AED; color: #fff; }
     .card-monday-btn {
       font-size: 11px; font-weight: 600; color: #0073EA;
       background: #E8F3FF; border: 1px solid #B3D4F8;
@@ -488,6 +535,10 @@
           <span class="monday-dot"></span>
           <span id="mondayAllLabel">Export All to Monday.com</span>
         </button>
+        <button class="reachinbox-btn" id="riAllBtn" onclick="openRiModal('all')">
+          <span class="ri-dot"></span>
+          <span id="riAllLabel">Send All to ReachInbox</span>
+        </button>
       </div>
     </div>
     <div id="leadsList"></div>
@@ -497,6 +548,19 @@
   <div id="errorState" style="display:none;" class="error-box"></div>
 
 </main>
+
+<!-- ReachInbox campaign picker modal -->
+<div class="ri-modal-overlay" id="riModalOverlay">
+  <div class="ri-modal">
+    <h3>Send to ReachInbox Campaign</h3>
+    <select id="riCampaignSelect"></select>
+    <p id="riModalStatus" style="font-size:13px;color:var(--text-muted);margin:0 0 14px;min-height:18px;"></p>
+    <div class="ri-modal-actions">
+      <button class="ri-modal-cancel" onclick="closeRiModal()">Cancel</button>
+      <button class="ri-modal-send" id="riSendBtn" onclick="confirmRiSend()">Send Leads</button>
+    </div>
+  </div>
+</div>
 
 <script>
   /* ── STATE ─────────────────────────────────────── */
@@ -688,10 +752,16 @@
         ${emailsHtml}
         ${hoursHtml}
         <hr class="divider" style="margin-top:16px;">
-        <button class="card-monday-btn" id="mon-${cardIdx}"
-          onclick="sendOneToMonday(${JSON.stringify(JSON.stringify(lead))}, 'mon-${cardIdx}')">
-          ⬡ Send to Monday.com
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="card-monday-btn" id="mon-${cardIdx}"
+            onclick="sendOneToMonday(${JSON.stringify(JSON.stringify(lead))}, 'mon-${cardIdx}')">
+            ⬡ Send to Monday.com
+          </button>
+          <button class="card-ri-btn" id="ri-${cardIdx}"
+            onclick="openRiModal('one', ${JSON.stringify(JSON.stringify(lead))}, 'ri-${cardIdx}')">
+            ✉ Send to ReachInbox
+          </button>
+        </div>
       </div>
     </article>`;
   }
@@ -737,6 +807,97 @@
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = 'leads-' + Date.now() + '.csv';
     a.click();
+  }
+
+  /* ── REACHINBOX ─────────────────────────────────── */
+  let riCampaigns = [];
+  let riPendingMode = null;   // 'all' or 'one'
+  let riPendingLead = null;   // single lead object (mode='one')
+  let riPendingBtnId = null;  // card button id (mode='one')
+
+  async function openRiModal(mode, leadJson, btnId) {
+    riPendingMode = mode;
+    riPendingLead = leadJson ? JSON.parse(leadJson) : null;
+    riPendingBtnId = btnId || null;
+
+    const overlay = document.getElementById('riModalOverlay');
+    const select  = document.getElementById('riCampaignSelect');
+    const status  = document.getElementById('riModalStatus');
+    status.textContent = 'Loading campaigns…';
+    select.innerHTML   = '';
+    overlay.classList.add('open');
+
+    try {
+      if (!riCampaigns.length) {
+        const res  = await fetch('/leads/reachinbox/campaigns');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not load campaigns');
+        riCampaigns = data.campaigns || [];
+      }
+      if (!riCampaigns.length) {
+        status.textContent = 'No campaigns found in ReachInbox. Create one first.';
+        document.getElementById('riSendBtn').disabled = true;
+        return;
+      }
+      riCampaigns.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name + (c.status ? ` (${c.status})` : '');
+        select.appendChild(opt);
+      });
+      status.textContent = '';
+      document.getElementById('riSendBtn').disabled = false;
+    } catch (err) {
+      status.textContent = '✗ ' + err.message;
+      document.getElementById('riSendBtn').disabled = true;
+    }
+  }
+
+  function closeRiModal() {
+    document.getElementById('riModalOverlay').classList.remove('open');
+  }
+
+  async function confirmRiSend() {
+    const campaignId = document.getElementById('riCampaignSelect').value;
+    if (!campaignId) return;
+
+    const leadsArr = riPendingMode === 'one' ? [riPendingLead] : leads;
+    const sendBtn  = document.getElementById('riSendBtn');
+    const status   = document.getElementById('riModalStatus');
+    sendBtn.disabled = true;
+    status.textContent = 'Sending…';
+
+    try {
+      const res  = await fetch('/leads/reachinbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: leadsArr, campaign_id: campaignId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Export failed');
+
+      const dupNote = data.duplicates > 0 ? `, ${data.duplicates} already in campaign` : '';
+      status.textContent = `✓ ${data.pushed} sent${dupNote}`;
+
+      if (riPendingBtnId) {
+        const cardBtn = document.getElementById(riPendingBtnId);
+        if (cardBtn) { cardBtn.textContent = '✓ Sent'; cardBtn.disabled = true; }
+      }
+      if (riPendingMode === 'all') {
+        const allBtn = document.getElementById('riAllBtn');
+        const allLbl = document.getElementById('riAllLabel');
+        if (allLbl) allLbl.textContent = `✓ ${data.pushed} sent${dupNote}`;
+        if (allBtn) { allBtn.style.color = 'var(--ok)'; allBtn.style.borderColor = 'var(--ok)'; }
+        setTimeout(() => {
+          if (allLbl) allLbl.textContent = 'Send All to ReachInbox';
+          if (allBtn) { allBtn.style.color = ''; allBtn.style.borderColor = ''; }
+        }, 3000);
+      }
+      setTimeout(closeRiModal, 1500);
+    } catch (err) {
+      status.textContent = '✗ ' + err.message;
+      sendBtn.disabled = false;
+    }
   }
 
   /* ── MONDAY.COM ─────────────────────────────────── */

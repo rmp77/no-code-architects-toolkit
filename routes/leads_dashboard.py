@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from services.leads_service import run_leads_search
 from services.monday_service import get_or_create_board, push_lead
+from services.reachinbox_service import get_campaigns, add_leads_to_campaign
 import logging
 import os
 
@@ -74,4 +75,45 @@ def monday_export():
         }), 200
     except Exception as e:
         logger.error(f"Monday.com export failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@leads_dashboard_bp.route('/leads/reachinbox/campaigns', methods=['GET'])
+def reachinbox_campaigns():
+    api_key = os.environ.get('REACHINBOX_API_KEY')
+    if not api_key:
+        return jsonify({"error": "REACHINBOX_API_KEY is not configured"}), 500
+    try:
+        campaigns = get_campaigns(api_key)
+        return jsonify({"campaigns": campaigns}), 200
+    except Exception as e:
+        logger.error(f"ReachInbox campaign fetch failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@leads_dashboard_bp.route('/leads/reachinbox', methods=['POST'])
+def reachinbox_export():
+    data = request.get_json() or {}
+    leads = data.get('leads', [])
+    campaign_id = data.get('campaign_id', '')
+
+    if not leads:
+        return jsonify({"error": "No leads provided"}), 400
+    if not campaign_id:
+        return jsonify({"error": "campaign_id is required"}), 400
+
+    api_key = os.environ.get('REACHINBOX_API_KEY')
+    if not api_key:
+        return jsonify({"error": "REACHINBOX_API_KEY is not configured"}), 500
+
+    try:
+        added, duplicates, errors = add_leads_to_campaign(campaign_id, leads, api_key)
+        return jsonify({
+            "pushed": added,
+            "duplicates": duplicates,
+            "total": len(leads),
+            "errors": errors,
+        }), 200
+    except Exception as e:
+        logger.error(f"ReachInbox export failed: {e}")
         return jsonify({"error": str(e)}), 500
