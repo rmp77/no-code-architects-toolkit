@@ -28,12 +28,13 @@ def dashboard_search():
 
     maps_key = os.environ.get('GOOGLE_MAPS_API_KEY')
     prospeo_key = os.environ.get('PROSPEO_API_KEY')
+    owinja_key = os.environ.get('OPENWEBNINJA_KEY')
 
     if not maps_key:
         return jsonify({"error": "GOOGLE_MAPS_API_KEY is not configured"}), 500
 
     try:
-        result = run_leads_search(business_type, location, limit, maps_key, prospeo_key)
+        result = run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key)
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

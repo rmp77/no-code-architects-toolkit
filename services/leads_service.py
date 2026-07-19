@@ -10,6 +10,9 @@ PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 PLACES_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 PLACES_DETAIL_FIELDS = "name,formatted_address,formatted_phone_number,website,opening_hours,rating,user_ratings_total,business_status,types"
 PROSPEO_DOMAIN_URL = "https://api.prospeo.io/domain-search"
+OPENWEBNINJA_URL = "https://api.openwebninja.com/real-time-web-search/search"
+
+NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
 SENIOR_KEYWORDS = [
     "owner", "founder", "ceo", "president", "coo", "cto", "cfo",
@@ -85,15 +88,45 @@ def get_domain_contacts(domain, api_key):
         return []
 
 
-def enrich_candidate(candidate, maps_key, prospeo_key):
+def get_company_news(company_name, owinja_key):
+    if not company_name or not owinja_key:
+        return None
+    try:
+        r = requests.get(
+            OPENWEBNINJA_URL,
+            params={"query": f'"{company_name}" news OR announcement OR blog', "limit": 5},
+            headers={"x-api-key": owinja_key},
+            timeout=15
+        )
+        if not r.ok:
+            return None
+        results = r.json().get("data", [])
+        for item in results:
+            text = f"{item.get('title','')} {item.get('snippet','')} {item.get('url','')}".lower()
+            if any(k in text for k in NEWS_BLOCKLIST):
+                continue
+            return {
+                "title": item.get("title", ""),
+                "url": item.get("url", ""),
+                "snippet": item.get("snippet", ""),
+                "date": item.get("date", ""),
+            }
+    except Exception as e:
+        logger.warning(f"OpenWebNinja news lookup failed for {company_name}: {e}")
+    return None
+
+
+def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
         contacts = get_domain_contacts(domain, prospeo_key)
         hours_data = details.get("opening_hours", {})
         clean_types = [t for t in details.get("types", []) if t not in NOISE_TYPES]
+        name = details.get("name")
+        news = get_company_news(name, owinja_key) if owinja_key else None
         return {
-            "name": details.get("name"),
+            "name": name,
             "address": details.get("formatted_address"),
             "phone": details.get("formatted_phone_number"),
             "website": details.get("website"),
@@ -105,20 +138,21 @@ def enrich_candidate(candidate, maps_key, prospeo_key):
             "open_now": hours_data.get("open_now"),
             "hours": hours_data.get("weekday_text", []),
             "place_id": candidate["place_id"],
-            "contacts": contacts
+            "contacts": contacts,
+            "recent_news": news,
         }
     except Exception as e:
         logger.error(f"Failed to enrich {candidate.get('place_id')}: {e}")
         return None
 
 
-def run_leads_search(business_type, location, limit, maps_key, prospeo_key):
+def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(enrich_candidate, c, maps_key, prospeo_key): c for c in candidates}
+        futures = {executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key): c for c in candidates}
         for future in as_completed(futures):
             result = future.result()
             if result:
