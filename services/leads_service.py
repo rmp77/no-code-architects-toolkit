@@ -13,6 +13,8 @@ PROSPEO_DOMAIN_URL = "https://api.prospeo.io/domain-search"
 OPENWEBNINJA_URL = "https://api.openwebninja.com/real-time-web-search/search"
 BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
 MV_VERIFY_URL = "https://api.millionverifier.com/api/v3/"
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_MODEL = "openai/gpt-4o-mini"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -201,6 +203,48 @@ def get_company_news(company_name, owinja_key):
     return None
 
 
+def get_ai_analysis(name, domain, types, openrouter_key):
+    if not name or not openrouter_key:
+        return None
+    industry = ", ".join(types[:3]) if types else "unknown"
+    prompt = (
+        f"Given this local business:\n"
+        f"Name: {name}\n"
+        f"Domain: {domain or 'unknown'}\n"
+        f"Type: {industry}\n\n"
+        f"Provide:\n"
+        f"1. summary: one sentence what they do (max 15 words)\n"
+        f"2. category: specific vertical (e.g. 'dental practice', 'Italian restaurant')\n"
+        f"3. customer_type: who they serve (max 10 words)\n"
+        f"4. cold_email_angle: one specific personalization angle for a cold email (max 20 words)\n\n"
+        f'Respond as JSON with exactly these keys: {{"summary","category","customer_type","cold_email_angle"}}'
+    )
+    try:
+        r = requests.post(
+            OPENROUTER_URL,
+            headers={"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"},
+            json={"model": OPENROUTER_MODEL, "messages": [{"role": "user", "content": prompt}],
+                  "response_format": {"type": "json_object"}, "max_tokens": 200},
+            timeout=20
+        )
+        if not r.ok:
+            return None
+        content = r.json().get("choices", [{}])[0].get("message", {}).get("content")
+        if not content:
+            return None
+        import json as _json
+        data = _json.loads(content)
+        return {
+            "summary": data.get("summary", ""),
+            "category": data.get("category", ""),
+            "customer_type": data.get("customer_type", ""),
+            "cold_email_angle": data.get("cold_email_angle", ""),
+        }
+    except Exception as e:
+        logger.warning(f"OpenRouter AI analysis failed for {name}: {e}")
+        return None
+
+
 def verify_email_mv(email, mv_key):
     if not email or not mv_key:
         return None
@@ -220,7 +264,7 @@ def verify_email_mv(email, mv_key):
         return None
 
 
-def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None):
+def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
@@ -233,6 +277,7 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         clean_types = [t for t in details.get("types", []) if t not in NOISE_TYPES]
         name = details.get("name")
         news = get_company_news(name, owinja_key) if owinja_key else None
+        ai_analysis = get_ai_analysis(name, domain, clean_types, openrouter_key) if openrouter_key else None
         google_phone = details.get("formatted_phone_number")
         return {
             "name": name,
@@ -249,20 +294,21 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
             "place_id": candidate["place_id"],
             "contacts": contacts,
             "recent_news": news,
+            "ai_analysis": ai_analysis,
         }
     except Exception as e:
         logger.error(f"Failed to enrich {candidate.get('place_id')}: {e}")
         return None
 
 
-def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None):
+def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key, mv_key): c
+            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key, mv_key, openrouter_key): c
             for c in candidates
         }
         for future in as_completed(futures):

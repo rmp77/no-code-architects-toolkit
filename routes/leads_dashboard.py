@@ -46,12 +46,13 @@ def dashboard_search():
     owinja_key = os.environ.get('OPENWEBNINJA_KEY')
     blitz_key = os.environ.get('BLITZ_API_KEY')
     mv_key = os.environ.get('MILLIONVERIFIER_API_KEY')
+    openrouter_key = os.environ.get('OPENROUTER_API_KEY')
 
     if not maps_key:
         return jsonify({"error": "GOOGLE_MAPS_API_KEY is not configured"}), 500
 
     try:
-        result = run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key, blitz_key, mv_key)
+        result = run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key, blitz_key, mv_key, openrouter_key)
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

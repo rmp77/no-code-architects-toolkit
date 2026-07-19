@@ -382,6 +382,11 @@
     .news-title:hover { text-decoration: underline; }
     .news-date { font-size: 11px; color: var(--text-2); }
     .news-snippet { font-size: 12px; color: var(--text-2); line-height: 1.5; margin-top: 2px; }
+    .ai-block { display: grid; gap: 6px; }
+    .ai-summary { font-size: 13px; color: var(--text-1); line-height: 1.5; }
+    .ai-angle { font-size: 12px; color: var(--text-2); line-height: 1.5; border-left: 3px solid var(--accent); padding-left: 8px; margin-top: 2px; }
+    .ai-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .ai-tag { font-size: 10px; background: var(--surface-2,#f3f4f6); color: var(--text-2); border-radius: 4px; padding: 2px 7px; }
 
     /* ── ERROR ───────────────────────────────────────────── */
     .error-box {
@@ -757,6 +762,19 @@
         </div>`;
     }
 
+    let aiHtml = '';
+    if (lead.ai_analysis && lead.ai_analysis.summary) {
+      const ai = lead.ai_analysis;
+      const tags = [ai.category, ai.customer_type].filter(Boolean)
+        .map(t => `<span class="ai-tag">${h(t)}</span>`).join('');
+      aiHtml = `<hr class="divider"><div class="eyebrow">🤖 AI Insights</div>
+        <div class="ai-block">
+          <div class="ai-summary">${h(ai.summary)}</div>
+          ${tags ? `<div class="ai-tags">${tags}</div>` : ''}
+          ${ai.cold_email_angle ? `<div class="ai-angle">${h(ai.cold_email_angle)}</div>` : ''}
+        </div>`;
+    }
+
     const cardIdx = Math.random().toString(36).slice(2);
 
     return `
@@ -777,6 +795,7 @@
         ${emailsHtml}
         ${hoursHtml}
         ${newsHtml}
+        ${aiHtml}
         <hr class="divider" style="margin-top:16px;">
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="card-monday-btn" id="mon-${cardIdx}"
