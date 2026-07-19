@@ -329,9 +329,11 @@
     }
 
     .contact-item { margin-bottom: 11px; }
-    .contact-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .contact-name { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
     .contact-title { font-size: 11px; color: var(--text-2); margin-top: 2px; }
     .no-contacts { font-size: 12px; color: var(--text-3); font-style: italic; }
+    .li-link { font-size: 10px; font-weight: 600; color: #0A66C2; text-decoration: none; border: 1px solid #0A66C2; border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
+    .li-link:hover { background: #0A66C2; color: #fff; }
 
     /* Right panel */
     .lead-right { padding: 20px 22px; }
@@ -691,7 +693,10 @@
     const namesHtml = contacts.length
       ? contacts.map(c => `
           <div class="contact-item">
-            <div class="contact-name">${h(c.first_name||'')} ${h(c.last_name||'')}</div>
+            <div class="contact-name">
+              ${h(c.first_name||'')} ${h(c.last_name||'')}
+              ${c.linkedin_url ? `<a href="${a(c.linkedin_url)}" target="_blank" rel="noopener" class="li-link">in</a>` : ''}
+            </div>
             ${c.position ? `<div class="contact-title">${h(c.position)}</div>` : ''}
           </div>`).join('')
       : '<div class="no-contacts">No contacts found</div>';
@@ -723,8 +728,11 @@
         const emailPart = c.email
           ? `<span class="email-addr">${h(c.email)}</span>${verf}<button class="copy-btn" onclick="copyIt(${JSON.stringify(c.email)},this)">Copy</button>`
           : '<span class="no-email">Email not found</span>';
+        const liLink = c.linkedin_url
+          ? `<a href="${a(c.linkedin_url)}" target="_blank" rel="noopener" class="li-link">in</a>`
+          : '';
         return `<div class="email-entry">
-          <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}</span>
+          <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}${liLink ? ' ' + liLink : ''}</span>
           ${emailPart}
         </div>`;
       }).join('');

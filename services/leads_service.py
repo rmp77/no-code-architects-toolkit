@@ -11,6 +11,7 @@ PLACES_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
 PLACES_DETAIL_FIELDS = "name,formatted_address,formatted_phone_number,website,opening_hours,rating,user_ratings_total,business_status,types"
 PROSPEO_DOMAIN_URL = "https://api.prospeo.io/domain-search"
 OPENWEBNINJA_URL = "https://api.openwebninja.com/real-time-web-search/search"
+BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -59,7 +60,41 @@ def get_place_details(place_id, api_key):
     return r.json().get("result", {})
 
 
-def get_domain_contacts(domain, api_key):
+def _get_blitz_contacts(domain, blitz_key):
+    """Domain → senior contacts (with LinkedIn URLs) + company phone via Blitz."""
+    if not domain or not blitz_key:
+        return [], None
+    try:
+        r = requests.post(
+            f"{BLITZ_BASE_URL}/api/enrichment/company",
+            json={"domain": domain},
+            headers={"Authorization": f"Bearer {blitz_key}", "Content-Type": "application/json"},
+            timeout=30
+        )
+        if r.status_code in (404, 402):
+            return [], None
+        r.raise_for_status()
+        data = r.json()
+        company = data.get("company", {})
+        company_phone = company.get("phone") or None
+        employees = data.get("employees", [])
+        seniors = [e for e in employees if is_senior(e.get("title", ""))]
+        contacts = [{
+            "first_name": e.get("first_name", ""),
+            "last_name": e.get("last_name", ""),
+            "email": e.get("email") or None,
+            "position": e.get("title"),
+            "linkedin_url": e.get("linkedin_url") or None,
+            "source": "blitz",
+        } for e in seniors]
+        return contacts, company_phone
+    except Exception as e:
+        logger.warning(f"Blitz enrichment failed for {domain}: {e}")
+        return [], None
+
+
+def _get_prospeo_contacts(domain, api_key):
+    """Domain → senior contacts with verified emails via Prospeo."""
     if not domain or not api_key:
         return []
     try:
@@ -81,11 +116,60 @@ def get_domain_contacts(domain, api_key):
             "email": c.get("email"),
             "position": c.get("position"),
             "verification_status": c.get("verification_status"),
-            "confidence_score": c.get("confidence_score")
+            "confidence_score": c.get("confidence_score"),
+            "source": "prospeo",
         } for c in seniors]
     except Exception as e:
         logger.warning(f"Prospeo domain search failed for {domain}: {e}")
         return []
+
+
+def get_domain_contacts(domain, blitz_key=None, prospeo_key=None):
+    """
+    Blitz first for contacts + phone. Prospeo fills email gaps and supplements.
+    Returns (contacts_list, company_phone).
+    """
+    blitz_contacts, company_phone = _get_blitz_contacts(domain, blitz_key)
+
+    # Run Prospeo when: no Blitz key, Blitz found nothing, or some contacts are missing emails
+    need_prospeo = prospeo_key and (
+        not blitz_contacts or any(not c.get("email") for c in blitz_contacts)
+    )
+    prospeo_contacts = _get_prospeo_contacts(domain, prospeo_key) if need_prospeo else []
+
+    if not blitz_contacts:
+        return prospeo_contacts, company_phone
+
+    # Merge: try to fill missing Blitz emails from Prospeo matches by name
+    prospeo_by_name = {}
+    for pc in prospeo_contacts:
+        key = f"{pc['first_name'].lower().strip()} {pc['last_name'].lower().strip()}"
+        prospeo_by_name[key] = pc
+
+    result = []
+    seen_emails = set()
+    for c in blitz_contacts:
+        if not c.get("email"):
+            name_key = f"{c['first_name'].lower().strip()} {c['last_name'].lower().strip()}"
+            if name_key in prospeo_by_name:
+                match = prospeo_by_name[name_key]
+                c = {**c, "email": match.get("email"),
+                     "verification_status": match.get("verification_status"),
+                     "source": "blitz+prospeo"}
+        email = c.get("email")
+        if email and email in seen_emails:
+            continue
+        if email:
+            seen_emails.add(email)
+        result.append(c)
+
+    # Add Prospeo-only contacts not already represented
+    for pc in prospeo_contacts:
+        if pc.get("email") and pc["email"] not in seen_emails:
+            seen_emails.add(pc["email"])
+            result.append(pc)
+
+    return result, company_phone
 
 
 def get_company_news(company_name, owinja_key):
@@ -116,19 +200,20 @@ def get_company_news(company_name, owinja_key):
     return None
 
 
-def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None):
+def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
-        contacts = get_domain_contacts(domain, prospeo_key)
+        contacts, company_phone = get_domain_contacts(domain, blitz_key=blitz_key, prospeo_key=prospeo_key)
         hours_data = details.get("opening_hours", {})
         clean_types = [t for t in details.get("types", []) if t not in NOISE_TYPES]
         name = details.get("name")
         news = get_company_news(name, owinja_key) if owinja_key else None
+        google_phone = details.get("formatted_phone_number")
         return {
             "name": name,
             "address": details.get("formatted_address"),
-            "phone": details.get("formatted_phone_number"),
+            "phone": google_phone or company_phone,
             "website": details.get("website"),
             "domain": domain,
             "rating": details.get("rating"),
@@ -146,13 +231,16 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None):
         return None
 
 
-def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None):
+def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key): c for c in candidates}
+        futures = {
+            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key): c
+            for c in candidates
+        }
         for future in as_completed(futures):
             result = future.result()
             if result:
