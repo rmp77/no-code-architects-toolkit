@@ -726,8 +726,9 @@
       : '';
 
     let emailsHtml = '';
+    const emailEntries = [];
     if (contacts.length) {
-      const items = contacts.map(c => {
+      contacts.forEach(c => {
         const verf = c.verification_status === 'valid'
           ? '<span class="verified-chip">✓ Verified</span>' : '';
         const emailPart = c.email
@@ -736,12 +737,21 @@
         const liLink = c.linkedin_url
           ? `<a href="${a(c.linkedin_url)}" target="_blank" rel="noopener" class="li-link">in</a>`
           : '';
-        return `<div class="email-entry">
+        emailEntries.push(`<div class="email-entry">
           <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}${liLink ? ' ' + liLink : ''}</span>
           ${emailPart}
-        </div>`;
-      }).join('');
-      emailsHtml = `<hr class="divider"><div class="eyebrow">Contact Emails</div><div class="email-block">${items}</div>`;
+        </div>`);
+      });
+    }
+    if (lead.business_email) {
+      emailEntries.push(`<div class="email-entry">
+        <span class="email-who" style="color:var(--text-3);font-style:italic">Business</span>
+        <span class="email-addr">${h(lead.business_email)}</span>
+        <button class="copy-btn" onclick="copyIt(${JSON.stringify(lead.business_email)},this)">Copy</button>
+      </div>`);
+    }
+    if (emailEntries.length) {
+      emailsHtml = `<hr class="divider"><div class="eyebrow">Contact Emails</div><div class="email-block">${emailEntries.join('')}</div>`;
     }
 
     let hoursHtml = '';
@@ -829,12 +839,13 @@
   /* ── EXPORT ─────────────────────────────────────── */
   function exportCSV() {
     if (!leads.length) return;
-    const cols = ['Company','Phone','Website','Address','Rating','Status','Contact Name','Title','Email','Verified'];
+    const cols = ['Company','Phone','Website','Address','Rating','Status','Contact Name','Title','Email','Verified','Business Email'];
     const rows = [cols];
     leads.forEach(l => {
       const cs = l.contacts || [];
+      const bizEmail = l.business_email || '';
       if (!cs.length) {
-        rows.push([l.name||'',l.phone||'',l.website||'',l.address||'',l.rating||'',l.business_status||'','','','','']);
+        rows.push([l.name||'',l.phone||'',l.website||'',l.address||'',l.rating||'',l.business_status||'','','','','',bizEmail]);
       } else {
         cs.forEach(c => {
           rows.push([
@@ -842,7 +853,8 @@
             l.rating||'',l.business_status||'',
             ((c.first_name||'')+' '+(c.last_name||'')).trim(),
             c.position||'', c.email||'',
-            c.verification_status === 'valid' ? 'Yes' : 'No'
+            c.verification_status === 'valid' ? 'Yes' : 'No',
+            bizEmail
           ]);
         });
       }

@@ -15,6 +15,8 @@ BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
 MV_VERIFY_URL = "https://api.millionverifier.com/api/v3/"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openai/gpt-4o-mini"
+LOCAL_BIZ_HOST = "local-business-data.p.rapidapi.com"
+LOCAL_BIZ_URL = f"https://{LOCAL_BIZ_HOST}/search"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -264,7 +266,29 @@ def verify_email_mv(email, mv_key):
         return None
 
 
-def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
+def _get_local_biz_email(place_id, rapidapi_key):
+    """Pull business-level email from Local Business Data API using Google place_id."""
+    if not place_id or not rapidapi_key:
+        return None
+    try:
+        r = requests.get(
+            LOCAL_BIZ_URL,
+            params={"place_id": place_id, "region": "us", "language": "en", "limit": "1"},
+            headers={"X-RapidAPI-Key": rapidapi_key, "X-RapidAPI-Host": LOCAL_BIZ_HOST},
+            timeout=15
+        )
+        if not r.ok:
+            return None
+        data = r.json()
+        results = data.get("data", [])
+        if results:
+            return results[0].get("email") or None
+    except Exception as e:
+        logger.warning(f"Local Business Data API failed for place {place_id}: {e}")
+    return None
+
+
+def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None, rapidapi_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
@@ -279,6 +303,7 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         news = get_company_news(name, owinja_key) if owinja_key else None
         ai_analysis = get_ai_analysis(name, domain, clean_types, openrouter_key) if openrouter_key else None
         google_phone = details.get("formatted_phone_number")
+        business_email = _get_local_biz_email(candidate["place_id"], rapidapi_key) if rapidapi_key else None
         return {
             "name": name,
             "address": details.get("formatted_address"),
@@ -293,6 +318,7 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
             "hours": hours_data.get("weekday_text", []),
             "place_id": candidate["place_id"],
             "contacts": contacts,
+            "business_email": business_email,
             "recent_news": news,
             "ai_analysis": ai_analysis,
         }
@@ -301,14 +327,14 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         return None
 
 
-def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
+def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None, rapidapi_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key, mv_key, openrouter_key): c
+            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key, mv_key, openrouter_key, rapidapi_key): c
             for c in candidates
         }
         for future in as_completed(futures):
