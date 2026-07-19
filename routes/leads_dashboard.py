@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from services.leads_service import run_leads_search
 from services.monday_service import get_or_create_board, push_lead
 from services.reachinbox_service import get_campaigns, add_leads_to_campaign
@@ -7,6 +7,21 @@ import os
 
 leads_dashboard_bp = Blueprint('leads_dashboard', __name__)
 logger = logging.getLogger(__name__)
+
+
+@leads_dashboard_bp.before_request
+def require_auth():
+    password = os.environ.get('DASHBOARD_PASSWORD', '')
+    if not password:
+        return None
+    auth = request.authorization
+    expected_user = os.environ.get('DASHBOARD_USER', 'admin')
+    if not auth or auth.username != expected_user or auth.password != password:
+        return Response(
+            'Access denied',
+            401,
+            {'WWW-Authenticate': 'Basic realm="Leads Dashboard"'}
+        )
 
 
 @leads_dashboard_bp.route('/leads', methods=['GET'])
