@@ -15,7 +15,7 @@ BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
 MV_VERIFY_URL = "https://api.millionverifier.com/api/v3/"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openai/gpt-4o-mini"
-LOCAL_BIZ_DETAILS_URL = "https://api.openwebninja.com/local-business-data/business-details"
+LOCAL_BIZ_SEARCH_URL = "https://api.openwebninja.com/local-business-data/search"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -265,28 +265,40 @@ def verify_email_mv(email, mv_key):
         return None
 
 
-def _get_local_biz_email(place_id, owinja_key):
-    """Pull business-level email from OpenWebNinja Local Business Data API using Google place_id."""
-    if not place_id or not owinja_key:
+def _get_local_biz_email(name, address, owinja_key):
+    """Search OpenWebNinja Local Business Data API by name to pull business email."""
+    if not name or not owinja_key:
         return None
     try:
+        # Add city context from address (e.g. "123 Main St, Austin, TX" → "Austin")
+        city = address.split(',')[1].strip() if address and address.count(',') >= 1 else ''
+        query = f"{name} {city}".strip() if city else name
         r = requests.get(
-            LOCAL_BIZ_DETAILS_URL,
-            params={"place_id": place_id, "extract_emails_and_contacts": "true"},
+            LOCAL_BIZ_SEARCH_URL,
+            params={
+                "query": query,
+                "limit": "1",
+                "extract_emails_and_contacts": "true",
+                "language": "en",
+                "region": "us",
+            },
             headers={"x-api-key": owinja_key},
             timeout=15
         )
         if not r.ok:
             return None
         data = r.json()
-        result = data.get("data") if isinstance(data.get("data"), dict) else data
+        results = data.get("data", [])
+        if not results:
+            return None
+        result = results[0]
         email = result.get("email")
         if not email:
             emails = result.get("emails", [])
             email = emails[0] if emails else None
         return email or None
     except Exception as e:
-        logger.warning(f"OpenWebNinja local biz details failed for {place_id}: {e}")
+        logger.warning(f"OpenWebNinja local biz search failed for {name}: {e}")
     return None
 
 
@@ -305,7 +317,7 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         news = get_company_news(name, owinja_key) if owinja_key else None
         ai_analysis = get_ai_analysis(name, domain, clean_types, openrouter_key) if openrouter_key else None
         google_phone = details.get("formatted_phone_number")
-        business_email = _get_local_biz_email(candidate["place_id"], owinja_key) if owinja_key else None
+        business_email = _get_local_biz_email(name, details.get("formatted_address", ""), owinja_key) if owinja_key else None
         return {
             "name": name,
             "address": details.get("formatted_address"),
