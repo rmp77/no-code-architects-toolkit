@@ -319,9 +319,14 @@ def create_app():
     # Register special route for Next.js root asset paths first
     from routes.v1.media.feedback import create_root_next_routes
     create_root_next_routes(app)
-    
+
     # Use the discover_and_register_blueprints function to register all blueprints
     discover_and_register_blueprints(app)
+
+    from flask import jsonify as _jsonify
+    @app.route('/health', methods=['GET'])
+    def health():
+        return _jsonify({"status": "ok"}), 200
 
     return app
 
