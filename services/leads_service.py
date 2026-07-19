@@ -12,6 +12,7 @@ PLACES_DETAIL_FIELDS = "name,formatted_address,formatted_phone_number,website,op
 PROSPEO_DOMAIN_URL = "https://api.prospeo.io/domain-search"
 OPENWEBNINJA_URL = "https://api.openwebninja.com/real-time-web-search/search"
 BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
+MV_VERIFY_URL = "https://api.millionverifier.com/api/v3/"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -200,11 +201,34 @@ def get_company_news(company_name, owinja_key):
     return None
 
 
-def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None):
+def verify_email_mv(email, mv_key):
+    if not email or not mv_key:
+        return None
+    try:
+        r = requests.get(
+            MV_VERIFY_URL,
+            params={"api": mv_key, "email": email, "timeout": 10},
+            timeout=15
+        )
+        if not r.ok:
+            return None
+        data = r.json()
+        result = data.get("resultcode") or data.get("result")
+        return "valid" if result in (1, "ok") else "invalid"
+    except Exception as e:
+        logger.warning(f"MillionVerifier check failed for {email}: {e}")
+        return None
+
+
+def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
         contacts, company_phone = get_domain_contacts(domain, blitz_key=blitz_key, prospeo_key=prospeo_key)
+        if mv_key and contacts:
+            for c in contacts:
+                if c.get("email") and not c.get("verification_status"):
+                    c["verification_status"] = verify_email_mv(c["email"], mv_key)
         hours_data = details.get("opening_hours", {})
         clean_types = [t for t in details.get("types", []) if t not in NOISE_TYPES]
         name = details.get("name")
@@ -231,14 +255,14 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         return None
 
 
-def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None):
+def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key): c
+            executor.submit(enrich_candidate, c, maps_key, prospeo_key, owinja_key, blitz_key, mv_key): c
             for c in candidates
         }
         for future in as_completed(futures):
