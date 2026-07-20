@@ -388,6 +388,26 @@
     .ai-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
     .ai-tag { font-size: 10px; background: var(--surface-2,#f3f4f6); color: var(--text-2); border-radius: 4px; padding: 2px 7px; }
 
+    .rank-chip {
+      font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      color: #7C3AED; background: #EDE9FE; border-radius: 4px; padding: 2px 7px;
+    }
+    @media (prefers-color-scheme: dark) { .rank-chip { background: #2D1B69; color: #C4B5FD; } }
+    :root[data-theme="dark"] .rank-chip { background: #2D1B69; color: #C4B5FD; }
+    :root[data-theme="light"] .rank-chip { background: #EDE9FE; color: #7C3AED; }
+
+    .yelp-block { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .yelp-rating { font-size: 13px; color: var(--text-1); }
+    .yelp-warn {
+      font-size: 11px; font-weight: 600; color: #B45309;
+      background: #FEF3C7; border-radius: 4px; padding: 2px 7px;
+    }
+    @media (prefers-color-scheme: dark) { .yelp-warn { background: #451A03; color: #FCD34D; } }
+    :root[data-theme="dark"] .yelp-warn { background: #451A03; color: #FCD34D; }
+    :root[data-theme="light"] .yelp-warn { background: #FEF3C7; color: #B45309; }
+    .yelp-link { font-size: 12px; color: var(--accent-txt); text-decoration: none; }
+    .yelp-link:hover { text-decoration: underline; }
+
     /* ── ERROR ───────────────────────────────────────────── */
     .error-box {
       background: var(--surface); border: 1px solid #FCA5A5;
@@ -745,6 +765,10 @@
       ? `<span class="rating"><span class="star">★</span> ${lead.rating} <span style="color:var(--text-3)">(${(lead.total_ratings||0).toLocaleString()})</span></span>`
       : '';
 
+    const rankHtml = lead.google_rank
+      ? `<span class="rank-chip">#${lead.google_rank} on Google</span>`
+      : '';
+
     const openHtml = (lead.open_now !== null && lead.open_now !== undefined)
       ? `<span class="open-pill ${lead.open_now ? 'open' : 'closed'}">${lead.open_now ? 'OPEN' : 'CLOSED'}</span>`
       : '';
@@ -830,6 +854,23 @@
         </div>`;
     }
 
+    let yelpHtml = '';
+    if (lead.yelp && lead.yelp.rating) {
+      const y = lead.yelp;
+      const diff = (lead.rating && y.rating) ? (lead.rating - y.rating) : null;
+      const diffHtml = (diff !== null && diff >= 0.5)
+        ? `<span class="yelp-warn">⚠️ ${diff.toFixed(1)} lower than Google</span>`
+        : '';
+      const reviewStr = y.review_count ? `(${Number(y.review_count).toLocaleString()})` : '';
+      const yLink = y.url ? `<a href="${a(y.url)}" target="_blank" rel="noopener" class="yelp-link">View on Yelp →</a>` : '';
+      yelpHtml = `<hr class="divider"><div class="eyebrow">🍽 Yelp</div>
+        <div class="yelp-block">
+          <span class="yelp-rating"><span class="star">★</span> ${y.rating} <span style="color:var(--text-3)">${reviewStr}</span></span>
+          ${diffHtml}
+          ${yLink}
+        </div>`;
+    }
+
     let aiHtml = '';
     if (lead.ai_analysis && lead.ai_analysis.summary) {
       const ai = lead.ai_analysis;
@@ -849,7 +890,7 @@
     <article class="lead-card" id="card-${cardIdx}">
       <div class="lead-left">
         <h2 class="co-name">${h(lead.name||'Unknown')}</h2>
-        <div class="co-meta">${ratingHtml}${openHtml}</div>
+        <div class="co-meta">${ratingHtml}${rankHtml}${openHtml}</div>
         ${phoneHtml}
         <hr class="divider">
         <div class="eyebrow">Contacts</div>
@@ -862,6 +903,7 @@
         ${tagsHtml}
         ${emailsHtml}
         ${hoursHtml}
+        ${yelpHtml}
         ${newsHtml}
         ${aiHtml}
         <hr class="divider" style="margin-top:16px;">
@@ -897,18 +939,21 @@
   /* ── EXPORT ─────────────────────────────────────── */
   function exportCSV() {
     if (!leads.length) return;
-    const cols = ['Company','Phone','Website','Address','Rating','Status','Contact Name','Title','Email','Verified','Business Email'];
+    const cols = ['Company','Google Rank','Phone','Website','Address','Google Rating','Yelp Rating','Yelp Reviews','Status','Contact Name','Title','Email','Verified','Business Email'];
     const rows = [cols];
     leads.forEach(l => {
       const cs = l.contacts || [];
       const bizEmail = l.business_email || '';
+      const yelpRating = (l.yelp && l.yelp.rating) ? l.yelp.rating : '';
+      const yelpReviews = (l.yelp && l.yelp.review_count) ? l.yelp.review_count : '';
+      const rank = l.google_rank || '';
       if (!cs.length) {
-        rows.push([l.name||'',l.phone||'',l.website||'',l.address||'',l.rating||'',l.business_status||'','','','','',bizEmail]);
+        rows.push([l.name||'',rank,l.phone||'',l.website||'',l.address||'',l.rating||'',yelpRating,yelpReviews,l.business_status||'','','','','',bizEmail]);
       } else {
         cs.forEach(c => {
           rows.push([
-            l.name||'',l.phone||'',l.website||'',l.address||'',
-            l.rating||'',l.business_status||'',
+            l.name||'',rank,l.phone||'',l.website||'',l.address||'',
+            l.rating||'',yelpRating,yelpReviews,l.business_status||'',
             ((c.first_name||'')+' '+(c.last_name||'')).trim(),
             c.position||'', c.email||'',
             c.verification_status === 'valid' ? 'Yes' : 'No',

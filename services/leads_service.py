@@ -17,6 +17,7 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openai/gpt-4o-mini"
 LOCAL_BIZ_SEARCH_URL = "https://api.openwebninja.com/local-business-data/search"
 WEBSITE_CONTACTS_URL = "https://api.openwebninja.com/website-contacts-scraper/get-contacts"
+YELP_SEARCH_URL = "https://api.openwebninja.com/yelp-business-data/search"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
@@ -305,6 +306,37 @@ def _get_local_biz_email(name, address, owinja_key):
     return None
 
 
+def _get_yelp_data(name, address, owinja_key):
+    """Look up a business on Yelp via OpenWebNinja — returns rating, review count, and URL."""
+    if not name or not owinja_key:
+        return None
+    try:
+        city = address.split(',')[1].strip() if address and address.count(',') >= 1 else ''
+        query = f"{name} {city}".strip() if city else name
+        r = requests.get(
+            YELP_SEARCH_URL,
+            params={"query": query, "limit": "1"},
+            headers={"x-api-key": owinja_key},
+            timeout=15
+        )
+        if not r.ok:
+            return None
+        data = r.json()
+        results = data.get("data", [])
+        if not results:
+            return None
+        biz = results[0]
+        rating = biz.get("rating")
+        review_count = biz.get("review_count")
+        url = biz.get("url") or biz.get("yelp_url") or biz.get("link")
+        if not rating:
+            return None
+        return {"rating": rating, "review_count": review_count, "url": url}
+    except Exception as e:
+        logger.warning(f"Yelp data fetch failed for {name}: {e}")
+    return None
+
+
 def _get_website_contacts(website, owinja_key):
     """Scrape a business website for contact emails via OpenWebNinja Website Contacts Scraper."""
     if not website or not owinja_key:
@@ -360,10 +392,12 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
         news = get_company_news(name, owinja_key) if owinja_key else None
         ai_analysis = get_ai_analysis(name, domain, clean_types, openrouter_key) if openrouter_key else None
         google_phone = details.get("formatted_phone_number")
-        business_email = _get_local_biz_email(name, details.get("formatted_address", ""), owinja_key) if owinja_key else None
+        address = details.get("formatted_address", "")
+        business_email = _get_local_biz_email(name, address, owinja_key) if owinja_key else None
+        yelp = _get_yelp_data(name, address, owinja_key) if owinja_key else None
         return {
             "name": name,
-            "address": details.get("formatted_address"),
+            "address": address,
             "phone": google_phone or company_phone,
             "website": details.get("website"),
             "domain": domain,
@@ -376,6 +410,8 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
             "place_id": candidate["place_id"],
             "contacts": contacts,
             "business_email": business_email,
+            "yelp": yelp,
+            "google_rank": candidate.get("google_rank"),
             "recent_news": news,
             "ai_analysis": ai_analysis,
         }
@@ -387,6 +423,8 @@ def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_ke
 def run_leads_search(business_type, location, limit, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
     query = f"{business_type} in {location}"
     candidates = get_place_candidates(query, maps_key)[:min(limit, 20)]
+    for i, c in enumerate(candidates):
+        c["google_rank"] = i + 1
 
     leads = []
     with ThreadPoolExecutor(max_workers=5) as executor:
