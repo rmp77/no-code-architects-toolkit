@@ -158,6 +158,49 @@
       line-height: 1.4;
     }
 
+    /* ── FUNNEL LEADS ───────────────────────────────────── */
+    .funnel-pill {
+      margin-top: 18px; padding: 14px 15px;
+      border-radius: 9px; border: 1px solid rgba(255,255,255,.07);
+      background: var(--sidebar-surf); cursor: pointer;
+      transition: border-color .15s;
+    }
+    .funnel-pill:hover { border-color: rgba(255,255,255,.18); }
+    .funnel-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+    .funnel-pill-lbl { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--sidebar-text); }
+    .funnel-count { font-size: 17px; font-weight: 700; color: var(--sidebar-head); font-variant-numeric: tabular-nums; }
+    .funnel-pill-sub { font-size: 11px; color: var(--sidebar-text); }
+    .funnel-pill-cta { font-size: 11px; color: var(--accent-txt,#7B98FF); margin-top: 6px; }
+
+    .funnel-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .funnel-hdr-back { font-size: 13px; color: var(--text-2); background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; cursor: pointer; }
+    .funnel-hdr-back:hover { color: var(--text-1); border-color: var(--text-2); }
+    .funnel-table { width: 100%; border-collapse: collapse; }
+    .funnel-table th { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-2); text-align: left; padding: 0 14px 10px; border-bottom: 1px solid var(--border); }
+    .funnel-table td { padding: 13px 14px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-1); vertical-align: middle; }
+    .funnel-table tr:last-child td { border-bottom: none; }
+    .funnel-table tr:hover td { background: var(--accent-soft); }
+    .funnel-path { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-radius: 4px; padding: 2px 7px; }
+    .funnel-path.ads      { color: #D97706; background: #FEF3C7; }
+    .funnel-path.overhead { color: #4361EE; background: #EEF1FF; }
+    .funnel-path.beginner { color: #059669; background: #ECFDF5; }
+    @media (prefers-color-scheme: dark) {
+      .funnel-path.ads      { color: #FCD34D; background: #451A03; }
+      .funnel-path.overhead { color: #7B98FF; background: #131D42; }
+      .funnel-path.beginner { color: #34D399; background: #022C22; }
+    }
+    :root[data-theme="dark"] .funnel-path.ads      { color:#FCD34D; background:#451A03; }
+    :root[data-theme="dark"] .funnel-path.overhead { color:#7B98FF; background:#131D42; }
+    :root[data-theme="dark"] .funnel-path.beginner { color:#34D399; background:#022C22; }
+    :root[data-theme="light"] .funnel-path.ads      { color:#D97706; background:#FEF3C7; }
+    :root[data-theme="light"] .funnel-path.overhead { color:#4361EE; background:#EEF1FF; }
+    :root[data-theme="light"] .funnel-path.beginner { color:#059669; background:#ECFDF5; }
+    .funnel-cpc-pain { color: #DC2626; font-weight: 700; }
+    .funnel-cpc-warn { color: #D97706; font-weight: 700; }
+    .funnel-cpc-ok   { color: #059669; font-weight: 700; }
+    .funnel-empty { text-align: center; padding: 60px 20px; color: var(--text-2); }
+    .funnel-empty strong { display: block; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
+
     /* ── MAIN ────────────────────────────────────────────── */
     .main { flex: 1; height: 100vh; overflow-y: auto; padding: 32px 36px; }
 
@@ -575,6 +618,15 @@
     <div class="stat-query" id="sQuery"></div>
   </div>
 
+  <div class="funnel-pill" id="funnelPill" onclick="showFunnelLeads()">
+    <div class="funnel-pill-top">
+      <span class="funnel-pill-lbl">Funnel Leads</span>
+      <span class="funnel-count" id="funnelCount">—</span>
+    </div>
+    <div class="funnel-pill-sub">From /roi calculator</div>
+    <div class="funnel-pill-cta">View all →</div>
+  </div>
+
 </aside>
 
 <!-- ───── MAIN ───── -->
@@ -663,6 +715,18 @@
 
   <!-- Error -->
   <div id="errorState" style="display:none;" class="error-box"></div>
+
+  <!-- Funnel Leads -->
+  <div id="funnelArea" style="display:none;">
+    <div class="funnel-hdr">
+      <button class="funnel-hdr-back" onclick="hideFunnelLeads()">← Back to Search</button>
+      <div>
+        <div class="results-title">Funnel Leads</div>
+        <div class="results-sub">Prospects who calculated their cost-per-call and left contact info</div>
+      </div>
+    </div>
+    <div id="funnelTableWrap"></div>
+  </div>
 
 </main>
 
@@ -1170,6 +1234,61 @@
     const btn = document.getElementById(btnId);
     sendToMonday([lead], btn, btn, '⬡ Send to Monday.com');
   }
+
+  /* ── FUNNEL LEADS ───────────────────────────────── */
+  function showFunnelLeads() {
+    document.getElementById('emptyState').style.display   = 'none';
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('resultsArea').style.display  = 'none';
+    document.getElementById('errorState').style.display   = 'none';
+    document.getElementById('funnelArea').style.display   = 'block';
+    loadFunnelLeads();
+  }
+
+  function hideFunnelLeads() {
+    document.getElementById('funnelArea').style.display  = 'none';
+    document.getElementById('emptyState').style.display  = 'flex';
+  }
+
+  async function loadFunnelLeads() {
+    const wrap = document.getElementById('funnelTableWrap');
+    wrap.innerHTML = '<p style="color:var(--text-2);font-size:13px;padding:20px 0">Loading…</p>';
+    try {
+      const res  = await fetch('/roi/leads');
+      const rows = await res.json();
+      document.getElementById('funnelCount').textContent = rows.length;
+      if (!rows.length) {
+        wrap.innerHTML = '<div class="funnel-empty"><strong>No leads yet</strong>Share your /roi link and check back once people run the calculator.</div>';
+        return;
+      }
+      const pathLabel = { ads: 'Paid Ads', overhead: 'Overhead', beginner: 'Beginner' };
+      let html = `<div style="overflow-x:auto"><table class="funnel-table">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Path</th><th>Cost/Call</th><th>Date</th>
+        </tr></thead><tbody>`;
+      for (const r of rows) {
+        const cpcClass = r.cpc > 250 ? 'funnel-cpc-pain' : r.cpc > 100 ? 'funnel-cpc-warn' : r.cpc > 0 ? 'funnel-cpc-ok' : '';
+        const cpcTxt   = r.cpc > 0 ? '$' + r.cpc.toLocaleString() : r.path === 'beginner' ? '—' : '—';
+        const date     = r.submitted_at ? r.submitted_at.slice(0, 10) : '—';
+        html += `<tr>
+          <td>${h(r.name)}</td>
+          <td><a href="mailto:${h(r.email)}" style="color:var(--accent-txt)">${h(r.email)}</a></td>
+          <td><span class="funnel-path ${h(r.path)}">${h(pathLabel[r.path] || r.path)}</span></td>
+          <td class="${cpcClass}">${cpcTxt}</td>
+          <td style="color:var(--text-2)">${date}</td>
+        </tr>`;
+      }
+      html += '</tbody></table></div>';
+      wrap.innerHTML = html;
+    } catch {
+      wrap.innerHTML = '<div class="funnel-empty"><strong>Could not load leads</strong>Check that the /roi/leads endpoint is reachable.</div>';
+    }
+  }
+
+  /* load funnel count on page init */
+  fetch('/roi/leads').then(r => r.json()).then(rows => {
+    document.getElementById('funnelCount').textContent = rows.length;
+  }).catch(() => {});
 
   /* ── UTILS ──────────────────────────────────────── */
   function h(s) {

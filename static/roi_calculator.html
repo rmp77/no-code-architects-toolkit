@@ -163,6 +163,7 @@ input.uline {
 input.uline::-webkit-outer-spin-button,
 input.uline::-webkit-inner-spin-button { -webkit-appearance: none; }
 input.uline::placeholder { color: var(--tx3); }
+input.uline.sm { font-size: clamp(17px, 2.6vw, 24px); font-family: system-ui, -apple-system, sans-serif; }
 
 /* ── Continue ── */
 .continue-group { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
@@ -482,6 +483,32 @@ kbd.ekey {
     </div>
   </div>
 
+  <!-- EMAIL CAPTURE -->
+  <div class="slide" id="s-email">
+    <div class="si">
+      <p class="q-text">Where should I send your breakdown?</p>
+      <p class="q-hint">I'll only reach out if your market looks like a fit for what I deliver — no sequences, no spam.</p>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div>
+          <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px">First name</p>
+          <div class="uline-wrap">
+            <input class="uline sm" type="text" id="cap-name" placeholder="Alex" autocomplete="given-name" oninput="syncEmailBtn()">
+          </div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px">Email</p>
+          <div class="uline-wrap">
+            <input class="uline sm" type="email" id="cap-email" placeholder="you@gmail.com" autocomplete="email" oninput="syncEmailBtn()">
+          </div>
+        </div>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-email" onclick="submitLead()" disabled>Send my breakdown →</button>
+        <button class="skip-btn" onclick="advance()">Skip — show results without this</button>
+      </div>
+    </div>
+  </div>
+
   <!-- RESULT -->
   <div class="slide" id="s-result">
     <div class="si" style="gap:20px">
@@ -508,9 +535,9 @@ kbd.ekey {
 <script>
 /* ── Sequences ── */
 const seqs = {
-  ads:      ['intro','path','ads-spend','ads-calls','ads-profit','result'],
-  overhead: ['intro','path','oh-staff','oh-rent','oh-calls','result'],
-  beginner: ['intro','path','bg-convos','bg-target','bg-profit','result'],
+  ads:      ['intro','path','ads-spend','ads-calls','ads-profit','email','result'],
+  overhead: ['intro','path','oh-staff','oh-rent','oh-calls','email','result'],
+  beginner: ['intro','path','bg-convos','bg-target','bg-profit','email','result'],
 };
 
 let seq   = ['intro','path'];
@@ -578,6 +605,7 @@ function restart() {
   document.querySelectorAll('input.uline').forEach(i => i.value = '');
   document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
   document.querySelectorAll('.btn-go[id^="btn-"]').forEach(b => b.disabled = true);
+  if (el('btn-email')) el('btn-email').disabled = true;
   go('result','intro','bwd');
 }
 
@@ -607,6 +635,11 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     if (name === 'intro') { startFunnel(); return; }
     if (name === 'path')  return; // options only via click/A/B/C
+    if (name === 'email') {
+      const btn = el('btn-email');
+      if (btn && !btn.disabled) submitLead();
+      return;
+    }
     const btn = slide(name)?.querySelector('.btn-go:not([disabled])');
     if (btn) advance();
     return;
@@ -741,6 +774,48 @@ function buildResult() {
       el('cta-sub').textContent = "Five minutes to see what consistent inbound volume looks like layered on top of what you're already doing.";
     }
   }
+}
+
+/* ── Email capture ── */
+function syncEmailBtn() {
+  const name  = (el('cap-name')?.value  || '').trim();
+  const email = (el('cap-email')?.value || '').trim();
+  const valid = name.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const btn   = el('btn-email');
+  if (btn) btn.disabled = !valid;
+}
+
+function submitLead() {
+  const name  = (el('cap-name')?.value  || '').trim();
+  const email = (el('cap-email')?.value || '').trim();
+  if (!name || !email) return;
+
+  const payload = { name, email, path };
+  if (path === 'ads') {
+    payload.spend  = parseFloat(el('ads-spend')?.value)  || 0;
+    payload.calls  = parseFloat(el('ads-calls')?.value)  || 0;
+    payload.profit = parseFloat(el('ads-profit')?.value) || 0;
+    payload.cpc    = payload.calls > 0 ? Math.round(payload.spend / payload.calls) : 0;
+  } else if (path === 'overhead') {
+    payload.staff  = parseFloat(el('oh-staff')?.value) || 0;
+    payload.rent   = parseFloat(el('oh-rent')?.value)  || 0;
+    payload.calls  = parseFloat(el('oh-calls')?.value) || 0;
+    payload.cpc    = payload.calls > 0 ? Math.round((payload.staff + payload.rent) / payload.calls) : 0;
+  } else if (path === 'beginner') {
+    payload.convos = parseFloat(el('bg-convos')?.value) || 0;
+    payload.target = parseFloat(el('bg-target')?.value) || 0;
+    payload.profit = parseFloat(el('bg-profit')?.value) || 0;
+    payload.cpc    = 0;
+    payload.needed = payload.target > 0 ? Math.ceil(payload.target / 0.25) : 0;
+  }
+
+  fetch('/roi/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+
+  advance();
 }
 
 // Init
