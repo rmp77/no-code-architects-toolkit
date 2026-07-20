@@ -107,6 +107,37 @@ def roi_submit():
     return jsonify({'ok': True})
 
 
+@roi_calculator_bp.route('/roi/monday/setup')
+def roi_monday_setup():
+    """Creates the Funnel Leads board in Monday (if it doesn't exist) and pushes a test lead."""
+    token        = os.environ.get('MONDAY_API_TOKEN')
+    workspace_id = os.environ.get('MONDAY_WORKSPACE_ID')
+    if not token or not workspace_id:
+        return jsonify({"error": "MONDAY_API_TOKEN or MONDAY_WORKSPACE_ID not set in environment"}), 500
+    try:
+        board_id, col_ids = get_or_create_funnel_board(workspace_id, token)
+        test_lead = {
+            'name':       'Test Lead (RMP Setup)',
+            'email':      'setup-test@rmpfund.com',
+            'phone':      '3055550100',
+            'path':       'ads',
+            'cpc':        325,
+            'biz_type':   'Real Estate Wholesaler',
+            'utm_source': 'setup-test',
+        }
+        item_id, status = push_funnel_lead(board_id, col_ids, test_lead, token)
+        return jsonify({
+            "ok":       True,
+            "board_id": board_id,
+            "status":   status,
+            "item_id":  item_id,
+            "message":  f"Funnel Leads board ready (id={board_id}). Test lead {status}. Find it in Monday under 'Funnel Leads'."
+        })
+    except Exception as e:
+        logger.error(f"Monday setup failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @roi_calculator_bp.route('/roi/leads')
 def roi_leads():
     try:
