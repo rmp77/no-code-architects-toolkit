@@ -264,6 +264,15 @@ kbd.ekey {
 }
 .restart-btn:hover { color: var(--tx2); }
 
+.bench-link {
+  display: none; font-size: 13px; color: var(--tx2);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--bd);
+  padding-bottom: 1px; line-height: 1.4;
+  transition: color .15s, border-color .15s;
+}
+.bench-link:hover { color: var(--tx); border-color: var(--tx2); }
+
 @media (max-width: 480px) {
   .slide { padding: 70px 18px 50px; }
   .si { gap: 22px; }
@@ -303,7 +312,42 @@ kbd.ekey {
     </div>
   </div>
 
-  <!-- 1: Path -->
+  <!-- 1: Business type -->
+  <div class="slide" id="s-biz">
+    <div class="si">
+      <p class="q-text">What type of business do you run?</p>
+      <p class="q-hint">I'll show you what Google and Facebook charge per lead in your market — so you know exactly where your number lands.</p>
+      <div class="uline-wrap">
+        <input class="uline sm" type="text" id="biz-type" placeholder="e.g. Roofing, Real Estate, Law Firm"
+               autocomplete="off" list="bizList"
+               oninput="el('btn-biz').disabled = !this.value.trim()">
+        <datalist id="bizList">
+          <option value="Real Estate Wholesaler">
+          <option value="Roofing Contractor">
+          <option value="Personal Injury Lawyer">
+          <option value="Immigration Lawyer">
+          <option value="HVAC Contractor">
+          <option value="Plumber">
+          <option value="Electrician">
+          <option value="Home Services">
+          <option value="Dentist">
+          <option value="Insurance Agent">
+          <option value="Solar Installation">
+          <option value="Water Damage Restoration">
+          <option value="Mold Remediation">
+          <option value="Tree Service">
+          <option value="Moving Company">
+          <option value="Pest Control">
+        </datalist>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-biz" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Path -->
   <div class="slide" id="s-path">
     <div class="si">
       <p class="q-text">How do you currently get inbound calls or leads?</p>
@@ -532,6 +576,7 @@ kbd.ekey {
           <a class="btn-book" id="cta-link" href="https://calendly.com/rmpleads/intro-call" target="_blank" rel="noopener">Book 5 minutes →</a>
           <button class="restart-btn" onclick="restart()">Start over</button>
         </div>
+        <a class="bench-link" id="bench-link" href="#" target="_blank" rel="noopener"></a>
       </div>
     </div>
   </div>
@@ -541,12 +586,12 @@ kbd.ekey {
 <script>
 /* ── Sequences ── */
 const seqs = {
-  ads:      ['intro','path','ads-spend','ads-calls','ads-profit','email','result'],
-  overhead: ['intro','path','oh-staff','oh-rent','oh-calls','email','result'],
-  beginner: ['intro','path','bg-convos','bg-target','bg-profit','email','result'],
+  ads:      ['intro','biz','path','ads-spend','ads-calls','ads-profit','email','result'],
+  overhead: ['intro','biz','path','oh-staff','oh-rent','oh-calls','email','result'],
+  beginner: ['intro','biz','path','bg-convos','bg-target','bg-profit','email','result'],
 };
 
-let seq   = ['intro','path'];
+let seq   = ['intro','biz','path'];
 let idx   = 0;
 let path  = null;
 
@@ -612,7 +657,10 @@ function restart() {
   document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
   document.querySelectorAll('.btn-go[id^="btn-"]').forEach(b => b.disabled = true);
   if (el('btn-email')) el('btn-email').disabled = true;
+  if (el('btn-biz'))   el('btn-biz').disabled   = true;
   if (el('cap-phone')) el('cap-phone').value = '';
+  if (el('biz-type'))  el('biz-type').value  = '';
+  if (el('bench-link')) el('bench-link').style.display = 'none';
   go('result','intro','bwd');
 }
 
@@ -622,7 +670,7 @@ function pickPath(p, btn) {
   btn.classList.add('sel');
   path = p;
   seq  = seqs[p];
-  idx  = 1; // currently on 'path' slide
+  idx  = 2; // currently on 'path' slide
   setTimeout(() => advance(), 280);
 }
 
@@ -689,8 +737,20 @@ function box(id, cls, lbl, stat, body) {
 }
 function hideBox(id) { el(id).style.display = 'none'; }
 
+function buildBenchLink() {
+  const biz  = (el('biz-type')?.value || '').trim();
+  const link = el('bench-link');
+  if (!link) return;
+  if (!biz) { link.style.display = 'none'; return; }
+  const q = encodeURIComponent(`average cost per lead ${biz} Google Ads Facebook Ads`);
+  link.href        = `https://www.google.com/search?q=${q}`;
+  link.textContent = `See what Google & Facebook charge for ${biz} leads →`;
+  link.style.display = 'inline';
+}
+
 function buildResult() {
   hideBox('res-b1'); hideBox('res-b2');
+  buildBenchLink();
 
   if (path === 'ads') {
     const spend  = parseFloat(el('ads-spend')?.value)  || 0;
@@ -806,7 +866,7 @@ function submitLead() {
   const email = (el('cap-email')?.value || '').trim();
   if (!name || !email) return;
 
-  const payload = { name, email, phone: (el('cap-phone')?.value || '').trim(), path, utm: utmParams() };
+  const payload = { name, email, phone: (el('cap-phone')?.value || '').trim(), path, biz_type: (el('biz-type')?.value || '').trim(), utm: utmParams() };
   if (path === 'ads') {
     payload.spend  = parseFloat(el('ads-spend')?.value)  || 0;
     payload.calls  = parseFloat(el('ads-calls')?.value)  || 0;
