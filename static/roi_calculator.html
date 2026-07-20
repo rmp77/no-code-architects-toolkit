@@ -3,727 +3,748 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What Is One Inbound Call Actually Costing You?</title>
+<title>What Is One Inbound Call Costing You? — RMP Marketing</title>
 <style>
-  :root {
-    --ground:    #0F1117;
-    --surface:   #161B27;
-    --surface2:  #1D2335;
-    --border:    #252E45;
-    --text:      #EDE8DF;
-    --text2:     #9B9586;
-    --text3:     #4E4940;
-    --gold:      #C9A227;
-    --gold-lt:   #E8C040;
-    --pain:      #E05244;
-    --warn:      #D4823A;
-    --ok:        #4BA87A;
-    --pain-dim:  rgba(224,82,68,.12);
-    --warn-dim:  rgba(212,130,58,.12);
-    --ok-dim:    rgba(75,168,122,.12);
-    --radius:    10px;
-  }
-  @media (prefers-color-scheme: light) { :root {
-    --ground:    #F0EEE9;
-    --surface:   #FFFFFF;
-    --surface2:  #F5F3EF;
-    --border:    #DDD9CF;
-    --text:      #1A1814;
-    --text2:     #6B6558;
-    --text3:     #ABA89F;
-    --gold:      #9C7A0C;
-    --gold-lt:   #C9A227;
-    --pain:      #C03A2E;
-    --warn:      #AA5C16;
-    --ok:        #2B7A52;
-    --pain-dim:  rgba(192,58,46,.08);
-    --warn-dim:  rgba(170,92,22,.08);
-    --ok-dim:    rgba(43,122,82,.08);
-  }}
-  :root[data-theme="dark"]  { --ground:#0F1117;--surface:#161B27;--surface2:#1D2335;--border:#252E45;--text:#EDE8DF;--text2:#9B9586;--text3:#4E4940;--gold:#C9A227;--gold-lt:#E8C040;--pain:#E05244;--warn:#D4823A;--ok:#4BA87A;--pain-dim:rgba(224,82,68,.12);--warn-dim:rgba(212,130,58,.12);--ok-dim:rgba(75,168,122,.12); }
-  :root[data-theme="light"] { --ground:#F0EEE9;--surface:#FFFFFF;--surface2:#F5F3EF;--border:#DDD9CF;--text:#1A1814;--text2:#6B6558;--text3:#ABA89F;--gold:#9C7A0C;--gold-lt:#C9A227;--pain:#C03A2E;--warn:#AA5C16;--ok:#2B7A52;--pain-dim:rgba(192,58,46,.08);--warn-dim:rgba(170,92,22,.08);--ok-dim:rgba(43,122,82,.08); }
+:root {
+  --bg:      #0C0E14;
+  --sf:      #131620;
+  --sf2:     #1A1D2C;
+  --bd:      #232840;
+  --tx:      #EDE8DF;
+  --tx2:     #8B8679;
+  --tx3:     #454035;
+  --gold:    #C9A227;
+  --glt:     #E4BB38;
+  --pain:    #E05244;
+  --warn:    #D4823A;
+  --ok:      #4BA87A;
+}
+@media (prefers-color-scheme: light) { :root {
+  --bg:#F0EEE9; --sf:#FFFFFF; --sf2:#F5F3EF; --bd:#DDD9CF;
+  --tx:#1A1814; --tx2:#6B6558; --tx3:#ABA89F;
+  --gold:#9C7A0C; --glt:#C9A227; --pain:#C03A2E; --warn:#AA5C16; --ok:#2B7A52;
+}}
+:root[data-theme="dark"]  { --bg:#0C0E14;--sf:#131620;--sf2:#1A1D2C;--bd:#232840;--tx:#EDE8DF;--tx2:#8B8679;--tx3:#454035;--gold:#C9A227;--glt:#E4BB38;--pain:#E05244;--warn:#D4823A;--ok:#4BA87A; }
+:root[data-theme="light"] { --bg:#F0EEE9;--sf:#FFFFFF;--sf2:#F5F3EF;--bd:#DDD9CF;--tx:#1A1814;--tx2:#6B6558;--tx3:#ABA89F;--gold:#9C7A0C;--glt:#C9A227;--pain:#C03A2E;--warn:#AA5C16;--ok:#2B7A52; }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--ground);
-    color: var(--text);
-    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    padding-bottom: 80px;
-  }
+html, body { height: 100%; overflow: hidden; }
 
-  /* ── Top bar ── */
-  .topbar {
-    border-bottom: 1px solid var(--border);
-    padding: 15px 28px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-  .topbar-mark { width: 6px; height: 20px; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
-  .topbar-name { font-size: 13px; font-weight: 600; color: var(--text2); letter-spacing: .02em; }
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+}
 
-  /* ── Page ── */
-  .page { max-width: 660px; margin: 0 auto; padding: 56px 24px 0; }
+/* ── Progress ── */
+#prog {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--gold); width: 0%;
+  transition: width .4s ease; z-index: 200;
+}
 
-  /* ── Hero ── */
-  .eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--gold); margin-bottom: 14px;
-  }
-  h1 {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: clamp(24px, 5vw, 38px);
-    font-weight: normal; line-height: 1.15; text-wrap: balance;
-    margin-bottom: 14px;
-  }
-  .hero-sub {
-    font-size: 15px; color: var(--text2); line-height: 1.6;
-    max-width: 500px; text-wrap: balance; margin-bottom: 40px;
-  }
+/* ── Nav bar ── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 16px 24px; display: flex;
+  align-items: center; justify-content: space-between;
+  z-index: 100; pointer-events: none;
+}
+#nav > * { pointer-events: all; }
+.nav-brand {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--tx2);
+  letter-spacing: .02em;
+}
+.nav-mark { width: 5px; height: 18px; background: var(--gold); border-radius: 2px; }
+#nav-right { display: flex; align-items: center; gap: 12px; }
+#back-btn {
+  display: none; background: transparent; border: 1px solid var(--bd);
+  color: var(--tx2); font-size: 12px; padding: 5px 12px;
+  border-radius: 6px; cursor: pointer;
+}
+#back-btn:hover { border-color: var(--tx2); color: var(--tx); }
+#step-lbl { font-size: 12px; color: var(--tx3); }
 
-  /* ── Card ── */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden; margin-bottom: 40px;
-  }
+/* ── Slides ── */
+#deck { position: fixed; inset: 0; overflow: hidden; }
 
-  /* ── Step ── */
-  .step-section {
-    padding: 26px 28px;
-    border-bottom: 1px solid var(--border);
-  }
-  .step-section:last-child { border-bottom: none; }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 24px 60px;
+  transform: translateX(100%);
+  transition: transform .45s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+.slide.active  { transform: translateX(0); }
+.slide.exited  { transform: translateX(-100%); }
 
-  .step-label {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
-  }
-  .step-q {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 17px; font-weight: normal; color: var(--text);
-    line-height: 1.3; margin-bottom: 16px; text-wrap: balance;
-  }
+/* ── Slide inner ── */
+.si {
+  width: 100%; max-width: 580px;
+  display: flex; flex-direction: column; gap: 28px;
+}
 
-  /* ── Path buttons ── */
-  .path-btns { display: flex; flex-direction: column; gap: 8px; }
-  .path-btn {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 14px 16px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--surface2);
-    cursor: pointer; text-align: left; color: var(--text);
-    transition: border-color .15s, background .15s;
-  }
-  .path-btn:hover { border-color: var(--gold); }
-  .path-btn.selected { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 8%, var(--surface)); }
-  .path-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-  .path-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .path-text-wrap { display: flex; flex-direction: column; gap: 2px; }
-  .path-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
-  .path-desc { font-size: 12.5px; color: var(--text2); line-height: 1.4; }
+/* ── Intro ── */
+.intro-pip { width: 7px; height: 28px; background: var(--gold); border-radius: 2px; }
 
-  /* ── Inputs ── */
-  .inputs-wrap {
-    display: none; flex-direction: column; gap: 20px;
-  }
-  .inputs-wrap.visible { display: flex; }
+.intro-q {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(28px, 5.5vw, 46px);
+  font-weight: normal; line-height: 1.12;
+  text-wrap: balance;
+}
+.intro-sub { font-size: 15px; color: var(--tx2); line-height: 1.6; max-width: 460px; }
 
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field-label {
-    font-size: 12px; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--text2);
-  }
-  .field-hint { font-size: 12px; color: var(--text3); }
+/* ── Question slides ── */
+.q-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(22px, 4.2vw, 34px);
+  font-weight: normal; line-height: 1.2;
+  text-wrap: balance; color: var(--tx);
+}
+.q-hint { font-size: 13px; color: var(--tx2); line-height: 1.55; margin-top: -12px; }
 
-  .input-row {
-    display: flex; align-items: center;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 7px; overflow: hidden;
-  }
-  .input-row:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 22%, transparent);
-  }
-  .pfx, .sfx {
-    padding: 0 11px; font-size: 14px; color: var(--text2);
-    flex-shrink: 0; user-select: none;
-  }
-  .input-row input[type="number"] {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-size: 16px;
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-variant-numeric: tabular-nums;
-    padding: 12px 4px; width: 0; min-width: 0;
-    -moz-appearance: textfield;
-  }
-  .input-row input[type="number"]::-webkit-inner-spin-button,
-  .input-row input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-  .input-row input:first-child { padding-left: 14px; }
+/* ── Option cards ── */
+.opts { display: flex; flex-direction: column; gap: 9px; }
 
-  /* ── Result ── */
-  .result-section {
-    padding: 26px 28px 24px;
-    border-top: 1px solid var(--border);
-    display: none; flex-direction: column; gap: 16px;
-  }
-  .result-section.visible { display: flex; }
+.opt {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding: 15px 16px; border-radius: 9px;
+  border: 1.5px solid var(--bd); background: var(--sf);
+  cursor: pointer; text-align: left; color: var(--tx);
+  transition: border-color .15s, background .15s; width: 100%;
+}
+.opt:hover { border-color: color-mix(in srgb, var(--gold) 60%, var(--bd)); }
+.opt.sel   { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 7%, var(--sf)); }
+.opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
-  .result-label-sm {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--text3);
-  }
-  .result-big {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: clamp(42px, 10vw, 68px);
-    font-variant-numeric: tabular-nums;
-    line-height: 1; letter-spacing: -.02em;
-    color: var(--text3); transition: color .3s;
-  }
-  .result-big.c-ok   { color: var(--ok); }
-  .result-big.c-warn { color: var(--warn); }
-  .result-big.c-pain { color: var(--pain); }
+.opt-key {
+  width: 24px; height: 24px; border-radius: 5px;
+  border: 1px solid var(--bd); background: var(--sf2);
+  font-size: 11px; font-weight: 700; font-family: monospace;
+  color: var(--tx2); display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.opt.sel .opt-key { background: var(--gold); color: #0C0E14; border-color: var(--gold); }
 
-  @keyframes num-flash { 0%,100%{opacity:1} 40%{opacity:.35} }
-  .result-big.flash { animation: num-flash .3s ease; }
-  @media (prefers-reduced-motion: reduce) { .result-big.flash { animation: none; } }
+.opt-icon { font-size: 19px; flex-shrink: 0; }
+.opt-body { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.opt-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.opt-desc  { font-size: 12.5px; color: var(--tx2); line-height: 1.4; }
 
-  .result-copy { font-size: 14px; color: var(--text2); line-height: 1.6; }
+/* ── Number input (underline style) ── */
+.uline-wrap {
+  display: flex; align-items: baseline; gap: 6px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--bd);
+  transition: border-color .2s;
+}
+.uline-wrap:focus-within { border-color: var(--gold); }
 
-  .info-box {
-    border-radius: 8px; padding: 14px 16px;
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1px solid;
-  }
-  .info-box.pain  { background: var(--pain-dim); border-color: var(--pain); }
-  .info-box.warn  { background: var(--warn-dim); border-color: var(--warn); }
-  .info-box.ok    { background: var(--ok-dim);   border-color: var(--ok); }
-  .info-box.neutral { background: var(--surface2); border-color: var(--border); }
+.uline-pfx, .uline-sfx {
+  font-family: Georgia, serif;
+  font-size: clamp(22px, 3.8vw, 34px);
+  color: var(--tx2); flex-shrink: 0;
+}
 
-  .info-box-label {
-    font-size: 10px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase;
-  }
-  .info-box.pain .info-box-label  { color: var(--pain); }
-  .info-box.warn .info-box-label  { color: var(--warn); }
-  .info-box.ok   .info-box-label  { color: var(--ok); }
-  .info-box.neutral .info-box-label { color: var(--text3); }
+input.uline {
+  flex: 1; min-width: 60px; width: 0;
+  background: transparent; border: none; outline: none;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(22px, 3.8vw, 34px);
+  font-variant-numeric: tabular-nums;
+  color: var(--tx); caret-color: var(--gold);
+  -moz-appearance: textfield;
+}
+input.uline::-webkit-outer-spin-button,
+input.uline::-webkit-inner-spin-button { -webkit-appearance: none; }
+input.uline::placeholder { color: var(--tx3); }
 
-  .info-box-stat {
-    font-family: Georgia, serif; font-size: 22px;
-    font-variant-numeric: tabular-nums; line-height: 1;
-  }
-  .info-box.pain .info-box-stat  { color: var(--pain); }
-  .info-box.warn .info-box-stat  { color: var(--warn); }
-  .info-box.ok   .info-box-stat  { color: var(--ok); }
+/* ── Continue ── */
+.continue-group { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
 
-  .info-box-body { font-size: 13px; color: var(--text2); line-height: 1.5; }
-  .info-box-body strong { color: var(--text); }
+.btn-go {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold); color: #0C0E14;
+  font-size: 14px; font-weight: 700;
+  padding: 12px 22px; border-radius: 7px;
+  border: none; cursor: pointer; letter-spacing: .02em;
+  transition: background .15s, opacity .15s;
+}
+.btn-go:hover { background: var(--glt); }
+.btn-go:disabled { opacity: .35; cursor: not-allowed; }
+.btn-go:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
-  /* Benchmark table */
-  .bench { display: flex; flex-direction: column; gap: 6px; }
-  .bench-head {
-    font-size: 10px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--text3);
-  }
-  .bench-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-size: 13px; color: var(--text2); gap: 12px;
-    padding: 5px 0; border-bottom: 1px solid var(--border);
-  }
-  .bench-row:last-child { border-bottom: none; }
-  .bench-val {
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap;
-  }
-  .bench-val.hi { color: var(--gold); font-weight: 600; }
+.enter-hint {
+  font-size: 12px; color: var(--tx3);
+  display: flex; align-items: center; gap: 5px;
+}
+kbd.ekey {
+  border: 1px solid var(--tx3); border-radius: 3px;
+  padding: 1px 5px; font-size: 10px; color: var(--tx3);
+  font-family: monospace;
+}
 
-  /* ── CTA ── */
-  .cta-section { padding: 24px 28px 28px; border-top: 1px solid var(--border); }
-  .cta-heading {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 19px; font-weight: normal; margin-bottom: 8px; text-wrap: balance;
-  }
-  .cta-body { font-size: 14px; color: var(--text2); line-height: 1.55; margin-bottom: 18px; }
-  .cta-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--gold); color: #0F1117; font-size: 14px; font-weight: 700;
-    padding: 12px 22px; border-radius: 7px; text-decoration: none; border: none;
-    cursor: pointer; letter-spacing: .02em; transition: background .15s;
-  }
-  .cta-btn:hover { background: var(--gold-lt); }
-  .cta-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.skip-btn {
+  font-size: 13px; color: var(--tx3);
+  background: none; border: none;
+  cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px; padding: 0;
+}
+.skip-btn:hover { color: var(--tx2); }
 
-  /* ── Proof ── */
-  .proof-section { margin-bottom: 40px; }
-  .proof-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--text3); margin-bottom: 14px;
-  }
-  .proof-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 480px) { .proof-grid { grid-template-columns: 1fr; } }
-  .proof-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
-    display: flex; flex-direction: column; gap: 5px;
-  }
-  .proof-num { font-family: Georgia, serif; font-size: 26px; color: var(--gold); line-height: 1; }
-  .proof-copy { font-size: 13px; color: var(--text2); line-height: 1.5; }
+/* ── Result ── */
+.res-eye {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--gold);
+}
+.res-big {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(52px, 13vw, 90px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1; letter-spacing: -.025em;
+  color: var(--tx3); transition: color .5s;
+}
+.res-big.c-pain { color: var(--pain); }
+.res-big.c-warn { color: var(--warn); }
+.res-big.c-ok   { color: var(--ok);   }
 
-  /* ── Footer ── */
-  .pg-footer {
-    font-size: 12px; color: var(--text3);
-    padding-top: 16px; border-top: 1px solid var(--border); line-height: 1.5;
-  }
+.res-copy { font-size: 14px; color: var(--tx2); line-height: 1.65; }
 
-  @media (max-width: 540px) {
-    .step-section { padding: 22px 18px; }
-    .result-section { padding: 22px 18px 20px; }
-    .cta-section { padding: 20px 18px 24px; }
-  }
+.res-box {
+  border-radius: 8px; padding: 15px 17px;
+  border: 1px solid var(--bd); background: var(--sf);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.res-box.pain { border-color: var(--pain); background: color-mix(in srgb, var(--pain) 10%, var(--sf)); }
+.res-box.warn { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--sf)); }
+.res-box.ok   { border-color: var(--ok);   background: color-mix(in srgb, var(--ok)   10%, var(--sf)); }
+
+.res-box-lbl {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.res-box.pain .res-box-lbl { color: var(--pain); }
+.res-box.warn .res-box-lbl { color: var(--warn); }
+.res-box.ok   .res-box-lbl { color: var(--ok);   }
+
+.res-box-stat {
+  font-family: Georgia, serif; font-size: 22px;
+  font-variant-numeric: tabular-nums; line-height: 1;
+  color: var(--tx);
+}
+.res-box-body { font-size: 13px; color: var(--tx2); line-height: 1.55; }
+.res-box-body strong { color: var(--tx); }
+
+.cta-h {
+  font-family: Georgia, serif; font-size: 19px;
+  font-weight: normal; color: var(--tx); text-wrap: balance; line-height: 1.25;
+}
+.cta-sub { font-size: 13.5px; color: var(--tx2); line-height: 1.55; }
+
+.btn-book {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold); color: #0C0E14;
+  font-size: 14px; font-weight: 700;
+  padding: 13px 22px; border-radius: 7px;
+  text-decoration: none; letter-spacing: .02em;
+  transition: background .15s; width: fit-content;
+}
+.btn-book:hover { background: var(--glt); }
+
+.restart-btn {
+  font-size: 13px; color: var(--tx3); background: none;
+  border: none; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px; padding: 0;
+}
+.restart-btn:hover { color: var(--tx2); }
+
+@media (max-width: 480px) {
+  .slide { padding: 70px 18px 50px; }
+  .si { gap: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide { transition: none; }
+  #prog { transition: none; }
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-mark"></div>
-  <span class="topbar-name">RMP Marketing</span>
-</div>
+<div id="prog"></div>
 
-<div class="page">
+<nav id="nav">
+  <div class="nav-brand">
+    <div class="nav-mark"></div>
+    RMP Marketing
+  </div>
+  <div id="nav-right">
+    <button id="back-btn" onclick="goBack()">← Back</button>
+    <span id="step-lbl"></span>
+  </div>
+</nav>
 
-  <div class="eyebrow">Real Estate &amp; Local Business</div>
-  <h1>What is one inbound inquiry call actually costing you?</h1>
-  <p class="hero-sub">Most business owners track revenue. Almost none track what each inbound call costs them — whether they run ads or not. Run your numbers.</p>
+<div id="deck">
 
-  <div class="card">
-
-    <!-- Step 1: Path select -->
-    <div class="step-section">
-      <div class="step-label">Step 1 of 2</div>
-      <p class="step-q">How do you currently get inbound calls or leads?</p>
-      <div class="path-btns" role="group" aria-label="Select how you get leads">
-
-        <button class="path-btn" onclick="selectPath('ads')" id="path-ads">
-          <span class="path-icon">📣</span>
-          <div class="path-text-wrap">
-            <span class="path-title">Paid ads — Google, Facebook, direct mail</span>
-            <span class="path-desc">You're actively spending on marketing and tracking some results</span>
-          </div>
-        </button>
-
-        <button class="path-btn" onclick="selectPath('overhead')" id="path-overhead">
-          <span class="path-icon">🏢</span>
-          <div class="path-text-wrap">
-            <span class="path-title">Referrals, word of mouth, or no active marketing</span>
-            <span class="path-desc">Calls come in on their own — but you still have staff, rent, and overhead running every month</span>
-          </div>
-        </button>
-
-        <button class="path-btn" onclick="selectPath('beginner')" id="path-beginner">
-          <span class="path-icon">🔑</span>
-          <div class="path-text-wrap">
-            <span class="path-title">I'm building my pipeline — newer to wholesaling</span>
-            <span class="path-desc">You've done a few deals or none yet. You know you need more motivated seller conversations</span>
-          </div>
-        </button>
-
+  <!-- 0: Intro -->
+  <div class="slide active" id="s-intro">
+    <div class="si">
+      <div class="intro-pip"></div>
+      <h1 class="intro-q">What is one inbound call actually costing your business?</h1>
+      <p class="intro-sub">Most business owners have never run this number — whether they run ads or not. It takes 60 seconds.</p>
+      <div class="continue-group">
+        <button class="btn-go" onclick="startFunnel()">Get started →</button>
       </div>
     </div>
+  </div>
 
-    <!-- Step 2: Inputs (shown dynamically) -->
-    <div class="step-section" id="inputs-section" style="display:none">
-      <div class="step-label">Step 2 of 2</div>
-      <p class="step-q" id="inputs-q">Enter your numbers</p>
-
-      <!-- PATH: Paid ads -->
-      <div class="inputs-wrap" id="inputs-ads">
-        <div class="field">
-          <label class="field-label" for="ads-spend">Monthly marketing spend</label>
-          <p class="field-hint">Include Google Ads, Facebook/Instagram, direct mail, cold calling services, list subscriptions (BatchLeads, PropStream, etc.)</p>
-          <div class="input-row">
-            <span class="pfx">$</span>
-            <input type="number" id="ads-spend" min="0" step="100" placeholder="2500" inputmode="numeric" oninput="calc()" aria-label="Monthly marketing spend">
-            <span class="sfx">/mo</span>
+  <!-- 1: Path -->
+  <div class="slide" id="s-path">
+    <div class="si">
+      <p class="q-text">How do you currently get inbound calls or leads?</p>
+      <div class="opts">
+        <button class="opt" id="opt-ads" onclick="pickPath('ads', this)">
+          <span class="opt-key">A</span>
+          <span class="opt-icon">📣</span>
+          <div class="opt-body">
+            <span class="opt-title">I run paid ads</span>
+            <span class="opt-desc">Google, Facebook, direct mail, cold calling services, list subscriptions</span>
           </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="ads-calls">Inbound motivated seller calls per month</label>
-          <p class="field-hint">Calls from people looking to sell — not your outbound dialers calling them</p>
-          <div class="input-row">
-            <input type="number" id="ads-calls" min="1" step="1" placeholder="14" inputmode="numeric" oninput="calc()" aria-label="Inbound calls per month" style="padding-left:14px">
-            <span class="sfx">calls</span>
+        </button>
+        <button class="opt" id="opt-oh" onclick="pickPath('overhead', this)">
+          <span class="opt-key">B</span>
+          <span class="opt-icon">🏢</span>
+          <div class="opt-body">
+            <span class="opt-title">Referrals, word of mouth, or no active marketing</span>
+            <span class="opt-desc">Calls come in on their own — but I still have staff, rent, and overhead running every month</span>
           </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="ads-profit">Average profit per deal <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
-          <p class="field-hint">Your typical assignment fee or net profit — unlocks deal-level ROI</p>
-          <div class="input-row">
-            <span class="pfx">$</span>
-            <input type="number" id="ads-profit" min="0" step="500" placeholder="11000" inputmode="numeric" oninput="calc()" aria-label="Average profit per deal">
+        </button>
+        <button class="opt" id="opt-bg" onclick="pickPath('beginner', this)">
+          <span class="opt-key">C</span>
+          <span class="opt-icon">🔑</span>
+          <div class="opt-body">
+            <span class="opt-title">I'm building my pipeline — newer to wholesaling</span>
+            <span class="opt-desc">I've done a few deals or none yet and need more motivated seller conversations</span>
           </div>
-        </div>
+        </button>
       </div>
-
-      <!-- PATH: Overhead / no marketing -->
-      <div class="inputs-wrap" id="inputs-overhead">
-        <div class="field">
-          <label class="field-label" for="oh-staff">Monthly staff cost</label>
-          <p class="field-hint">Paralegal, secretary, receptionist, associates — anyone whose time is tied to your business running</p>
-          <div class="input-row">
-            <span class="pfx">$</span>
-            <input type="number" id="oh-staff" min="0" step="100" placeholder="6000" inputmode="numeric" oninput="calc()" aria-label="Monthly staff cost">
-            <span class="sfx">/mo</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="oh-rent">Monthly office / facility cost</label>
-          <p class="field-hint">Rent, utilities, insurance, software — what it costs to keep the lights on</p>
-          <div class="input-row">
-            <span class="pfx">$</span>
-            <input type="number" id="oh-rent" min="0" step="100" placeholder="3000" inputmode="numeric" oninput="calc()" aria-label="Monthly office cost">
-            <span class="sfx">/mo</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="oh-calls">Inbound inquiry calls per month</label>
-          <p class="field-hint">New potential clients or motivated sellers actually calling your office each month</p>
-          <div class="input-row">
-            <input type="number" id="oh-calls" min="1" step="1" placeholder="8" inputmode="numeric" oninput="calc()" aria-label="Inbound calls per month" style="padding-left:14px">
-            <span class="sfx">calls</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- PATH: Beginner wholesaler -->
-      <div class="inputs-wrap" id="inputs-beginner">
-        <div class="field">
-          <label class="field-label" for="bg-convos">Motivated seller conversations last month</label>
-          <p class="field-hint">Actual two-way conversations with someone who wants to sell — not cold calls you made to them</p>
-          <div class="input-row">
-            <input type="number" id="bg-convos" min="0" step="1" placeholder="3" inputmode="numeric" oninput="calc()" aria-label="Seller conversations last month" style="padding-left:14px">
-            <span class="sfx">convos</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="bg-target">Deals you want to close this year</label>
-          <p class="field-hint">Your honest goal for the next 12 months</p>
-          <div class="input-row">
-            <input type="number" id="bg-target" min="1" step="1" placeholder="12" inputmode="numeric" oninput="calc()" aria-label="Target deals per year" style="padding-left:14px">
-            <span class="sfx">deals</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field-label" for="bg-profit">Target profit per deal <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
-          <p class="field-hint">What you're aiming to make per assignment or flip</p>
-          <div class="input-row">
-            <span class="pfx">$</span>
-            <input type="number" id="bg-profit" min="0" step="500" placeholder="8000" inputmode="numeric" oninput="calc()" aria-label="Target profit per deal">
-          </div>
-        </div>
-      </div>
-
     </div>
+  </div>
 
-    <!-- Result (shown dynamically) -->
-    <div class="result-section" id="result-section">
+  <!-- ADS: spend -->
+  <div class="slide" id="s-ads-spend">
+    <div class="si">
+      <p class="q-text">How much do you spend on marketing each month?</p>
+      <p class="q-hint">Include Google Ads, Facebook, direct mail, cold calling services, list subscriptions (BatchLeads, PropStream, etc.)</p>
+      <div class="uline-wrap">
+        <span class="uline-pfx">$</span>
+        <input class="uline" type="number" id="ads-spend" min="0" step="100" placeholder="2500" inputmode="numeric" oninput="syncBtn('ads-spend','btn-ads-spend')">
+        <span class="uline-sfx">/mo</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-ads-spend" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
 
-      <!-- Primary number -->
+  <!-- ADS: calls -->
+  <div class="slide" id="s-ads-calls">
+    <div class="si">
+      <p class="q-text">How many inbound motivated seller calls does that generate each month?</p>
+      <p class="q-hint">Calls from people looking to sell — not outbound calls your team is making</p>
+      <div class="uline-wrap">
+        <input class="uline" type="number" id="ads-calls" min="1" step="1" placeholder="14" inputmode="numeric" style="padding-left:0" oninput="syncBtn('ads-calls','btn-ads-calls')">
+        <span class="uline-sfx">calls</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-ads-calls" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADS: profit (optional) -->
+  <div class="slide" id="s-ads-profit">
+    <div class="si">
+      <p class="q-text">What's your average profit per deal closed?</p>
+      <p class="q-hint">Assignment fee or net profit per wholesale deal — unlocks deal-level ROI in your results</p>
+      <div class="uline-wrap">
+        <span class="uline-pfx">$</span>
+        <input class="uline" type="number" id="ads-profit" min="0" step="500" placeholder="11000" inputmode="numeric">
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" onclick="advance()">See my results →</button>
+        <button class="skip-btn" onclick="advance()">Skip — show results without this</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERHEAD: staff -->
+  <div class="slide" id="s-oh-staff">
+    <div class="si">
+      <p class="q-text">What do you pay in staff costs each month?</p>
+      <p class="q-hint">Paralegal, secretary, receptionist, associates — anyone whose time is tied to your business running</p>
+      <div class="uline-wrap">
+        <span class="uline-pfx">$</span>
+        <input class="uline" type="number" id="oh-staff" min="0" step="100" placeholder="6000" inputmode="numeric" oninput="syncBtn('oh-staff','btn-oh-staff')">
+        <span class="uline-sfx">/mo</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-oh-staff" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERHEAD: rent -->
+  <div class="slide" id="s-oh-rent">
+    <div class="si">
+      <p class="q-text">What does your office and overhead cost each month?</p>
+      <p class="q-hint">Rent, utilities, insurance, software — what it costs to keep the lights on whether a client calls or not</p>
+      <div class="uline-wrap">
+        <span class="uline-pfx">$</span>
+        <input class="uline" type="number" id="oh-rent" min="0" step="100" placeholder="3000" inputmode="numeric" oninput="syncBtn('oh-rent','btn-oh-rent')">
+        <span class="uline-sfx">/mo</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-oh-rent" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERHEAD: calls -->
+  <div class="slide" id="s-oh-calls">
+    <div class="si">
+      <p class="q-text">How many inbound inquiry calls do you actually get per month?</p>
+      <p class="q-hint">New potential clients calling in — not you or your team reaching out to them</p>
+      <div class="uline-wrap">
+        <input class="uline" type="number" id="oh-calls" min="1" step="1" placeholder="8" inputmode="numeric" oninput="syncBtn('oh-calls','btn-oh-calls')">
+        <span class="uline-sfx">calls/mo</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-oh-calls" onclick="advance()" disabled>See my results →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEGINNER: convos -->
+  <div class="slide" id="s-bg-convos">
+    <div class="si">
+      <p class="q-text">How many motivated seller conversations did you have last month?</p>
+      <p class="q-hint">Two-way conversations with someone who wants to sell — not cold calls your team made to a list</p>
+      <div class="uline-wrap">
+        <input class="uline" type="number" id="bg-convos" min="0" step="1" placeholder="3" inputmode="numeric" oninput="syncBtn('bg-convos','btn-bg-convos')">
+        <span class="uline-sfx">conversations</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-bg-convos" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEGINNER: target -->
+  <div class="slide" id="s-bg-target">
+    <div class="si">
+      <p class="q-text">How many deals do you want to close this year?</p>
+      <p class="q-hint">Your honest goal — not what sounds impressive, what would actually change your year</p>
+      <div class="uline-wrap">
+        <input class="uline" type="number" id="bg-target" min="1" step="1" placeholder="12" inputmode="numeric" oninput="syncBtn('bg-target','btn-bg-target')">
+        <span class="uline-sfx">deals</span>
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" id="btn-bg-target" onclick="advance()" disabled>Continue →</button>
+        <p class="enter-hint">or press <kbd class="ekey">Enter ↵</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEGINNER: profit (optional) -->
+  <div class="slide" id="s-bg-profit">
+    <div class="si">
+      <p class="q-text">What are you targeting per deal?</p>
+      <p class="q-hint">Assignment fee or net profit — shows the revenue sitting in your conversation gap</p>
+      <div class="uline-wrap">
+        <span class="uline-pfx">$</span>
+        <input class="uline" type="number" id="bg-profit" min="0" step="500" placeholder="8000" inputmode="numeric">
+      </div>
+      <div class="continue-group">
+        <button class="btn-go" onclick="advance()">See my results →</button>
+        <button class="skip-btn" onclick="advance()">Skip — show results without this</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="slide" id="s-result">
+    <div class="si" style="gap:20px">
       <div>
-        <div class="result-label-sm" id="result-label-sm">Your cost per inbound call</div>
-        <div class="result-big" id="result-big" aria-live="polite">—</div>
+        <p class="res-eye" id="res-eye">Your cost per inbound call</p>
+        <div class="res-big" id="res-big">—</div>
       </div>
-      <div class="result-copy" id="result-copy"></div>
-
-      <!-- Dynamic info boxes -->
-      <div id="box1" style="display:none"></div>
-      <div id="box2" style="display:none"></div>
-      <div id="box3" style="display:none"></div>
-
-      <!-- Benchmark (ads + overhead paths) -->
-      <div id="bench-wrap" style="display:none">
-        <div class="bench">
-          <div class="bench-head">What motivated seller calls cost elsewhere</div>
-          <div class="bench-row"><span>Google / Facebook Ads</span><span class="bench-val">$80 – $400 / call</span></div>
-          <div class="bench-row"><span>Direct mail response</span><span class="bench-val">$200 – $500 / call</span></div>
-          <div class="bench-row"><span>Cold calling services</span><span class="bench-val">$150 – $350 / call</span></div>
-          <div class="bench-row"><span>Pay-per-call (discuss on our call)</span><span class="bench-val hi">→</span></div>
+      <p class="res-copy" id="res-copy"></p>
+      <div id="res-b1" style="display:none"></div>
+      <div id="res-b2" style="display:none"></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <p class="cta-h" id="cta-h"></p>
+        <p class="cta-sub" id="cta-sub">Five minutes. I'll tell you straight if your market qualifies or not.</p>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px">
+          <a class="btn-book" id="cta-link" href="https://calendly.com/rmpfund/5min" target="_blank" rel="noopener">Book 5 minutes →</a>
+          <button class="restart-btn" onclick="restart()">Start over</button>
         </div>
       </div>
-
     </div>
+  </div>
 
-    <!-- CTA -->
-    <div class="cta-section" id="cta-section" style="display:none">
-      <div class="cta-heading" id="cta-heading">Want to see what a better number looks like for your market?</div>
-      <p class="cta-body" id="cta-body">Five minutes. I'll tell you straight whether it makes sense or not.</p>
-      <a class="cta-btn" href="https://calendly.com/rmpfund/5min" target="_blank" rel="noopener">
-        Book 5 minutes &rarr;
-      </a>
-    </div>
-
-  </div><!-- .card -->
-
-  <!-- Proof -->
-  <section class="proof-section">
-    <div class="proof-eyebrow">Results from other markets</div>
-    <div class="proof-grid">
-      <div class="proof-card">
-        <div class="proof-num">$50,000</div>
-        <div class="proof-copy">Added to a roofing contractor's pipeline — inbound calls from homeowners actively searching their market</div>
-      </div>
-      <div class="proof-card">
-        <div class="proof-num">50 leads</div>
-        <div class="proof-copy">Generated in one month for a healthcare staffing company — qualified inbound contacts, not cold lists</div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="pg-footer">
-    This tool estimates your cost per inbound call from the numbers you enter. Nothing you type is stored or transmitted. &mdash; RMP Marketing
-  </footer>
-
-</div>
+</div><!-- deck -->
 
 <script>
-  let currentPath = null;
+/* ── Sequences ── */
+const seqs = {
+  ads:      ['intro','path','ads-spend','ads-calls','ads-profit','result'],
+  overhead: ['intro','path','oh-staff','oh-rent','oh-calls','result'],
+  beginner: ['intro','path','bg-convos','bg-target','bg-profit','result'],
+};
 
-  function selectPath(p) {
-    currentPath = p;
-    document.querySelectorAll('.path-btn').forEach(b => b.classList.remove('selected'));
-    document.getElementById('path-' + p).classList.add('selected');
+let seq   = ['intro','path'];
+let idx   = 0;
+let path  = null;
 
-    const sec = document.getElementById('inputs-section');
-    sec.style.display = 'block';
+/* ── Slide helpers ── */
+const el = id => document.getElementById(id);
+const slide = name => el('s-' + name);
 
-    const qs = {
-      ads:      'Tell me about your current marketing spend',
-      overhead: 'Tell me about your monthly business overhead',
-      beginner: 'Tell me where you are in the business right now'
-    };
-    document.getElementById('inputs-q').textContent = qs[p];
+function go(from, to, dir) {
+  const fEl = slide(from);
+  const tEl = slide(to);
+  if (!tEl) return;
 
-    ['ads','overhead','beginner'].forEach(id => {
-      const el = document.getElementById('inputs-' + id);
-      el.classList.toggle('visible', id === p);
-    });
+  // Place incoming slide off-screen without transition
+  tEl.style.transition = 'none';
+  tEl.classList.remove('active','exited');
+  tEl.style.transform = dir === 'fwd' ? 'translateX(100%)' : 'translateX(-100%)';
 
-    clearResult();
-    calc();
-    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    tEl.style.transition = '';
+    tEl.classList.add('active');
+    tEl.style.transform = '';
+
+    if (fEl) {
+      fEl.classList.remove('active');
+      fEl.classList.add('exited');
+      fEl.style.transform = dir === 'fwd' ? 'translateX(-100%)' : 'translateX(100%)';
+      setTimeout(() => {
+        fEl.classList.remove('exited');
+        fEl.style.transform = '';
+      }, 460);
+    }
+
+    // Auto-focus first input
+    const inp = tEl.querySelector('input');
+    if (inp) setTimeout(() => inp.focus(), 320);
+    updateChrome();
+  }));
+}
+
+function advance() {
+  if (idx >= seq.length - 1) return;
+  const from = seq[idx++];
+  const to   = seq[idx];
+  if (to === 'result') buildResult();
+  go(from, to, 'fwd');
+}
+
+function goBack() {
+  if (idx <= 0) return;
+  const from = seq[idx--];
+  const to   = seq[idx];
+  go(from, to, 'bwd');
+}
+
+function startFunnel() { advance(); }
+
+function restart() {
+  seq  = ['intro','path'];
+  idx  = 0;
+  path = null;
+  // Clear inputs
+  document.querySelectorAll('input.uline').forEach(i => i.value = '');
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('.btn-go[id^="btn-"]').forEach(b => b.disabled = true);
+  go('result','intro','bwd');
+}
+
+/* ── Path selection ── */
+function pickPath(p, btn) {
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  path = p;
+  seq  = seqs[p];
+  idx  = 1; // currently on 'path' slide
+  setTimeout(() => advance(), 280);
+}
+
+/* ── Button enable/disable ── */
+function syncBtn(inputId, btnId) {
+  const v = parseFloat(el(inputId)?.value) || 0;
+  const b = el(btnId);
+  if (b) b.disabled = v <= 0;
+}
+
+/* ── Keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey) return;
+  const name = seq[idx];
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (name === 'intro') { startFunnel(); return; }
+    if (name === 'path')  return; // options only via click/A/B/C
+    const btn = slide(name)?.querySelector('.btn-go:not([disabled])');
+    if (btn) advance();
+    return;
   }
 
-  function clearResult() {
-    document.getElementById('result-section').classList.remove('visible');
-    document.getElementById('cta-section').style.display = 'none';
+  if (name === 'path') {
+    if (e.key.toLowerCase() === 'a') el('opt-ads')?.click();
+    if (e.key.toLowerCase() === 'b') el('opt-oh')?.click();
+    if (e.key.toLowerCase() === 'c') el('opt-bg')?.click();
   }
+});
 
-  function fmt(n) {
-    if (n >= 10000) return '$' + (n / 1000).toFixed(0) + 'k';
-    if (n >= 1000)  return '$' + (n / 1000).toFixed(1).replace(/\.0$/,'') + 'k';
-    return '$' + Math.round(n).toLocaleString();
-  }
-  function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
+/* ── Chrome updates ── */
+function updateChrome() {
+  const name = seq[idx];
+  const total = seq.length - 1; // slides excluding intro
+  const pct   = idx === 0 ? 0 : (idx / total) * 100;
+  el('prog').style.width = pct + '%';
 
-  function colorClass(cpc) {
-    if (cpc > 250) return 'c-pain';
-    if (cpc > 100) return 'c-warn';
-    return 'c-ok';
-  }
+  el('back-btn').style.display = idx === 0 ? 'none' : 'inline-block';
 
-  function setBox(id, cls, label, stat, body) {
-    const el = document.getElementById(id);
-    el.innerHTML = `<div class="info-box ${cls}">
-      <div class="info-box-label">${label}</div>
-      ${stat ? `<div class="info-box-stat">${stat}</div>` : ''}
-      <div class="info-box-body">${body}</div>
-    </div>`;
-    el.style.display = 'block';
-  }
-  function hideBox(id) { document.getElementById(id).style.display = 'none'; }
+  const isResult = name === 'result';
+  const isIntro  = idx === 0;
+  el('step-lbl').textContent = isResult ? 'Your results'
+    : isIntro ? ''
+    : `${idx} of ${total - 1}`;
+}
 
-  function flash() {
-    const el = document.getElementById('result-big');
-    el.classList.remove('flash');
-    void el.offsetWidth;
-    el.classList.add('flash');
-  }
+/* ── Result build ── */
+function fmt(n)  { return '$' + Math.round(n).toLocaleString(); }
+function fmtK(n) { return n >= 10000 ? '$' + Math.round(n/1000) + 'k' : fmt(n); }
 
-  function showResult(labelSm, bigNum, bigClass, copy) {
-    document.getElementById('result-label-sm').textContent = labelSm;
-    const numEl = document.getElementById('result-big');
-    numEl.textContent = bigNum;
-    numEl.className = 'result-big ' + bigClass;
-    flash();
-    document.getElementById('result-copy').innerHTML = copy;
-    document.getElementById('result-section').classList.add('visible');
-    document.getElementById('cta-section').style.display = 'block';
-  }
+function box(id, cls, lbl, stat, body) {
+  el(id).innerHTML = `<div class="res-box ${cls}">
+    <p class="res-box-lbl">${lbl}</p>
+    ${stat ? `<p class="res-box-stat">${stat}</p>` : ''}
+    <p class="res-box-body">${body}</p>
+  </div>`;
+  el(id).style.display = 'block';
+}
+function hideBox(id) { el(id).style.display = 'none'; }
 
-  function calc() {
-    if (!currentPath) return;
+function buildResult() {
+  hideBox('res-b1'); hideBox('res-b2');
 
-    if (currentPath === 'ads') calcAds();
-    else if (currentPath === 'overhead') calcOverhead();
-    else calcBeginner();
-  }
+  if (path === 'ads') {
+    const spend  = parseFloat(el('ads-spend')?.value)  || 0;
+    const calls  = parseFloat(el('ads-calls')?.value)  || 0;
+    const profit = parseFloat(el('ads-profit')?.value) || 0;
+    if (!spend || !calls) return;
 
-  function calcAds() {
-    const spend  = parseFloat(document.getElementById('ads-spend').value)  || 0;
-    const calls  = parseFloat(document.getElementById('ads-calls').value)  || 0;
-    const profit = parseFloat(document.getElementById('ads-profit').value) || 0;
-
-    hideBox('box1'); hideBox('box2'); hideBox('box3');
-    document.getElementById('bench-wrap').style.display = 'none';
-
-    if (!spend || !calls) { clearResult(); return; }
-
-    const cpc   = spend / calls;
-    const cls   = colorClass(cpc);
-    const annual = spend * 12;
-
-    let copy = `You spend ${fmtFull(spend)}/month and receive ${Math.round(calls)} inbound seller calls. `;
-    if (cpc > 250) copy += `At ${fmtFull(cpc)} per call, you're on the expensive end — even before staff time or follow-up costs.`;
-    else if (cpc > 100) copy += `That's within typical range for paid channels, though there's usually room to bring it down.`;
-    else copy += `That's a solid number. The question is whether you can scale it without the cost climbing.`;
-
-    showResult('Your cost per motivated seller call', fmtFull(cpc), cls, copy);
+    const cpc = spend / calls;
+    el('res-eye').textContent = 'Your cost per motivated seller call';
+    el('res-big').textContent = fmt(cpc);
+    el('res-big').className   = 'res-big ' + (cpc > 250 ? 'c-pain' : cpc > 100 ? 'c-warn' : 'c-ok');
+    el('res-copy').innerHTML  = `You spend ${fmt(spend)}/month and get ${Math.round(calls)} inbound seller calls. That's <strong>${fmt(cpc)}</strong> to get one motivated seller on the phone — before any staff time, follow-up, or deal costs.`;
 
     if (cpc > 150) {
-      setBox('box1', cpc > 250 ? 'pain' : 'warn',
-        'Annual spend on call acquisition',
-        fmt(annual),
-        `${fmtFull(Math.round(calls)*12).replace('$','')} calls a year at ${fmtFull(cpc)} each. That&rsquo;s what you&rsquo;re paying just to have the conversation — before any staff time, follow-up, or deal costs.`
+      box('res-b1', cpc > 250 ? 'pain' : 'warn',
+        'Annual call acquisition cost', fmtK(spend * 12),
+        `${Math.round(calls * 12).toLocaleString()} inbound calls a year at ${fmt(cpc)} each. That number runs whether you close those calls or not.`
       );
     }
-
     if (profit > 0) {
-      const closeRate = 0.25;
-      const dealsPerMo = calls * closeRate;
-      const rev = dealsPerMo * profit;
-      const net = rev - spend;
-      const roiPct = Math.round((net / spend) * 100);
-      const cls2 = net > 0 ? 'ok' : 'pain';
-      setBox('box2', cls2,
+      const deals = calls * 0.25;
+      const net   = (deals * profit) - spend;
+      box('res-b2', net > 0 ? 'ok' : 'pain',
         'Deal-level ROI at 25% close rate',
-        (net >= 0 ? '+' : '') + fmtFull(net) + '/mo',
-        `${dealsPerMo.toFixed(1)} deals × ${fmtFull(profit)} = <strong>${fmtFull(rev)}/month</strong> in gross profit, minus ${fmtFull(spend)} in marketing = <strong>${(roiPct >= 0 ? '+' : '') + roiPct}% ROI</strong>. Adjust the close rate for your actual numbers.`
+        (net >= 0 ? '+' : '') + fmt(net) + '/mo',
+        `${deals.toFixed(1)} deals × ${fmt(profit)} = <strong>${fmt(deals * profit)}/month</strong> gross minus ${fmt(spend)} in spend.`
       );
     }
+    el('cta-h').textContent = cpc > 200
+      ? "That number has room to come down."
+      : "Want to see what pay-per-call stacks against what you're running?";
+    el('cta-sub').textContent = 'Five minutes. I\'ll tell you straight if your market qualifies or not.';
 
-    document.getElementById('bench-wrap').style.display = 'block';
-
-    // CTA copy based on state
-    if (cpc > 250) {
-      document.getElementById('cta-heading').textContent = 'That number has room to come down.';
-      document.getElementById('cta-body').textContent = 'I deliver inbound calls at a fixed per-call rate — no ad spend guesswork. Five minutes and I\'ll tell you if your market qualifies.';
-    } else {
-      document.getElementById('cta-heading').textContent = 'Want to see what pay-per-call looks like alongside what you\'re running?';
-      document.getElementById('cta-body').textContent = 'Five minutes. I\'ll tell you straight if it\'s additive or redundant for your market.';
-    }
-  }
-
-  function calcOverhead() {
-    const staff = parseFloat(document.getElementById('oh-staff').value) || 0;
-    const rent  = parseFloat(document.getElementById('oh-rent').value)  || 0;
-    const calls = parseFloat(document.getElementById('oh-calls').value) || 0;
-
-    hideBox('box1'); hideBox('box2'); hideBox('box3');
-    document.getElementById('bench-wrap').style.display = 'block';
-
-    if ((!staff && !rent) || !calls) { clearResult(); return; }
+  } else if (path === 'overhead') {
+    const staff = parseFloat(el('oh-staff')?.value) || 0;
+    const rent  = parseFloat(el('oh-rent')?.value)  || 0;
+    const calls = parseFloat(el('oh-calls')?.value) || 0;
+    if (!calls) return;
 
     const total = staff + rent;
     const cpc   = total / calls;
-    const cls   = colorClass(cpc);
+    el('res-eye').textContent = 'Overhead cost per inbound call';
+    el('res-big').textContent = fmt(cpc);
+    el('res-big').className   = 'res-big ' + (cpc > 250 ? 'c-pain' : cpc > 100 ? 'c-warn' : 'c-ok');
+    el('res-copy').innerHTML  = `Your business costs <strong>${fmt(total)}/month</strong> to run. Divided by ${Math.round(calls)} inbound calls, each inquiry carries <strong>${fmt(cpc)}</strong> of overhead — before you've spent a dollar on marketing.`;
 
-    const copy = `Your business costs ${fmtFull(total)}/month to run — staff, rent, everything. Divided by ${Math.round(calls)} inbound calls, each inquiry is carrying <strong>${fmtFull(cpc)}</strong> of that overhead before you've spent a dollar on marketing.`;
-
-    showResult('Overhead cost per inbound call', fmtFull(cpc), cls, copy);
-
-    setBox('box1', cpc > 200 ? 'pain' : 'warn',
-      'The invisible cost per call',
-      null,
-      `Most businesses think &ldquo;we don&rsquo;t pay for marketing.&rdquo; But your overhead doesn&rsquo;t stop while the phone isn&rsquo;t ringing. Every day without an inquiry call is ${fmtFull(Math.round(total / 20))} in overhead with nothing coming in.`
+    box('res-b1', cpc > 200 ? 'pain' : 'warn',
+      'The invisible cost most businesses never calculate', null,
+      `Your overhead clock runs whether the phone is ringing or not. Every day without an inquiry call costs roughly <strong>${fmt(Math.round(total / 20))}</strong> in business overhead with nothing coming in to show for it.`
     );
+    el('cta-h').textContent  = "That overhead is working whether the phone rings or not.";
+    el('cta-sub').textContent = "I deliver inbound calls at a fixed per-call rate — you only pay when a qualified prospect calls in. Five minutes to see if your practice area and market qualify.";
 
-    if (calls < 15 && total > 3000) {
-      const neededCalls = Math.ceil(total / 150);
-      setBox('box2', 'warn',
-        'What it looks like at $150/call',
-        `${neededCalls} calls/month`,
-        `If you could bring your cost per call down to $150 by adding inbound volume, you&rsquo;d need ${neededCalls} calls to &ldquo;pay off&rdquo; the same overhead. You&rsquo;re currently at ${Math.round(calls)}.`
-      );
-    }
+  } else if (path === 'beginner') {
+    const convos  = parseFloat(el('bg-convos')?.value) || 0;
+    const target  = parseFloat(el('bg-target')?.value) || 0;
+    const profit  = parseFloat(el('bg-profit')?.value) || 0;
+    if (!target) return;
 
-    document.getElementById('cta-heading').textContent = 'That overhead is working whether the phone rings or not.';
-    document.getElementById('cta-body').textContent = 'I generate inbound calls at a fixed per-call rate — you pay only when a qualified prospect calls in. Five minutes to see if your practice area and market qualify.';
-  }
+    const needed    = Math.ceil(target / 0.25);
+    const neededMo  = Math.ceil(needed / 12);
+    const currentYr = Math.round(convos * 12);
+    const gap       = Math.max(0, needed - currentYr);
+    const onPace    = currentYr >= needed;
 
-  function calcBeginner() {
-    const convos  = parseFloat(document.getElementById('bg-convos').value)  || 0;
-    const target  = parseFloat(document.getElementById('bg-target').value)  || 0;
-    const profit  = parseFloat(document.getElementById('bg-profit').value)  || 0;
-
-    hideBox('box1'); hideBox('box2'); hideBox('box3');
-    document.getElementById('bench-wrap').style.display = 'none';
-
-    if (!target) { clearResult(); return; }
-
-    // At 25% close rate on inbound conversations
-    const closeRate = 0.25;
-    const convosNeeded = Math.ceil(target / closeRate); // per year
-    const convosPerMo  = Math.ceil(convosNeeded / 12);
-    const currentPace  = Math.round(convos * 12);      // annualized
-    const gap          = Math.max(0, convosNeeded - currentPace);
-
-    document.getElementById('result-label-sm').textContent = 'Motivated seller conversations you need per year';
-    const numEl = document.getElementById('result-big');
-    numEl.textContent = convosNeeded;
-    numEl.className = 'result-big ' + (currentPace >= convosNeeded ? 'c-ok' : 'c-pain');
-    flash();
-
-    let copy = `To close ${Math.round(target)} deals this year at a 25% close rate, you need <strong>${convosNeeded} motivated seller conversations</strong> — about <strong>${convosPerMo}/month</strong>.`;
-    if (convos > 0) {
-      copy += ` At your current pace of ${Math.round(convos)}/month, you&rsquo;re on track for ${currentPace} conversations this year.`;
-    }
-    document.getElementById('result-copy').innerHTML = copy;
-    document.getElementById('result-section').classList.add('visible');
-    document.getElementById('cta-section').style.display = 'block';
+    el('res-eye').textContent = 'Motivated seller conversations needed this year';
+    el('res-big').textContent = needed.toLocaleString();
+    el('res-big').className   = 'res-big ' + (onPace ? 'c-ok' : 'c-pain');
+    el('res-copy').innerHTML  = `To close ${Math.round(target)} deals at a 25% close rate, you need <strong>${needed} seller conversations</strong> — about <strong>${neededMo}/month</strong>.`
+      + (convos > 0 ? ` At your current pace, you're on track for ${currentYr} this year.` : '');
 
     if (gap > 0) {
-      setBox('box1', 'pain',
-        'Your conversation gap',
-        gap + ' conversations/year',
-        `You need ${gap} more motivated seller conversations than your current pace to hit your target. That&rsquo;s ${Math.ceil(gap/12)} more per month. The fastest way to close that gap is more inbound — people calling you, not you chasing them.`
+      box('res-b1', 'pain', 'Your conversation gap',
+        gap + ' conversations short',
+        `You need ${Math.ceil(gap/12)} more seller conversations per month to hit your target. Every month without them is a month of deals you won't close.`
       );
-    } else if (convos > 0) {
-      setBox('box1', 'ok',
-        'You\'re on pace',
-        null,
-        `At ${Math.round(convos)} conversations/month, you&rsquo;re tracking to ${currentPace} this year — enough to hit your target at a 25% close rate. The question now is whether the conversation quality matches the volume.`
-      );
-    }
-
-    if (profit > 0 && gap > 0) {
-      const missedDeals = Math.round(gap * closeRate);
-      const missedRev   = missedDeals * profit;
-      setBox('box2', 'warn',
-        'Revenue gap from missing those conversations',
-        fmt(missedRev) + '/year',
-        `${gap} missing conversations × ${(closeRate*100).toFixed(0)}% close = ~${missedDeals} deals you won&rsquo;t close this year at your current pace. At ${fmtFull(profit)}/deal, that&rsquo;s <strong>${fmtFull(missedRev)}</strong> left on the table.`
-      );
-    }
-
-    if (gap > 0) {
-      document.getElementById('cta-heading').textContent = 'You need more conversations. That\'s the only thing to fix right now.';
-      document.getElementById('cta-body').textContent = 'Every deal you\'ll ever close starts with a motivated seller calling you. I generate those calls at a fixed per-call rate — you talk to real people, get reps, and close deals. Five minutes to see if your market qualifies.';
+      if (profit > 0) {
+        const missedRev = Math.round(gap * 0.25) * profit;
+        box('res-b2', 'warn', 'Revenue sitting in that gap',
+          fmtK(missedRev) + '/year',
+          `${Math.round(gap * 0.25)} missed deals × ${fmt(profit)} = <strong>${fmt(missedRev)}</strong> left on the table at your current pace.`
+        );
+      }
+      el('cta-h').textContent  = "You need more conversations. That's the only thing to fix right now.";
+      el('cta-sub').textContent = "Every deal starts with a motivated seller calling you. I generate those calls at a fixed per-call rate — you get the reps, close deals faster, and learn the business by doing it. Five minutes to see if your market qualifies.";
     } else {
-      document.getElementById('cta-heading').textContent = 'You\'re building the right habit. Let\'s talk about scaling it.';
-      document.getElementById('cta-body').textContent = 'Five minutes to see what adding consistent inbound volume looks like on top of what you\'re doing.';
+      el('cta-h').textContent  = "You're on pace. Let's talk about scaling it.";
+      el('cta-sub').textContent = "Five minutes to see what consistent inbound volume looks like layered on top of what you're already doing.";
     }
   }
+}
+
+// Init
+updateChrome();
 </script>
 </body>
 </html>
