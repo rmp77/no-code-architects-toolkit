@@ -21,8 +21,10 @@ def _init_db():
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             name         TEXT,
             email        TEXT,
+            phone        TEXT,
             path         TEXT,
             cpc          INTEGER,
+            utm_source   TEXT,
             data_json    TEXT,
             submitted_at TEXT
         )''')
@@ -45,17 +47,21 @@ def roi_calculator():
 
 @roi_calculator_bp.route('/roi/submit', methods=['POST'])
 def roi_submit():
-    data  = request.get_json(silent=True) or {}
-    name  = str(data.get('name',  '')).strip()[:100]
-    email = str(data.get('email', '')).strip()[:200]
-    path  = str(data.get('path',  '')).strip()[:20]
-    cpc   = int(data.get('cpc',   0))
+    data       = request.get_json(silent=True) or {}
+    name       = str(data.get('name',  '')).strip()[:100]
+    email      = str(data.get('email', '')).strip()[:200]
+    phone      = str(data.get('phone', '')).strip()[:30]
+    path       = str(data.get('path',  '')).strip()[:20]
+    cpc        = int(data.get('cpc',   0))
+    utm        = data.get('utm', {}) or {}
+    utm_source = str(utm.get('utm_source', '')).strip()[:100]
     try:
         with _db() as c:
             c.execute(
                 'INSERT INTO roi_submissions '
-                '(name, email, path, cpc, data_json, submitted_at) VALUES (?,?,?,?,?,?)',
-                (name, email, path, cpc, json.dumps(data), datetime.utcnow().isoformat())
+                '(name, email, phone, path, cpc, utm_source, data_json, submitted_at) '
+                'VALUES (?,?,?,?,?,?,?,?)',
+                (name, email, phone, path, cpc, utm_source, json.dumps(data), datetime.utcnow().isoformat())
             )
     except Exception:
         pass
@@ -67,7 +73,7 @@ def roi_leads():
     try:
         with _db() as c:
             rows = c.execute(
-                'SELECT id, name, email, path, cpc, submitted_at '
+                'SELECT id, name, email, phone, path, cpc, utm_source, submitted_at '
                 'FROM roi_submissions ORDER BY submitted_at DESC LIMIT 200'
             ).fetchall()
         return jsonify([dict(r) for r in rows])
