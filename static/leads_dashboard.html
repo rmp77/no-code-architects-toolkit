@@ -272,6 +272,33 @@
     }
     .ri-modal-cancel { background: #E5E7EB; color: #374151; }
     .ri-modal-send { background: #7C3AED; color: #fff; }
+    .ri-modal-send:disabled { background: #C4B5FD; cursor: not-allowed; }
+    /* Approval gate */
+    .ri-gate {
+      background: #FFFBEB; border: 1px solid #FCD34D;
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .ri-gate { background: #2D2507; border-color: #92400E; }
+    }
+    :root[data-theme="dark"] .ri-gate { background: #2D2507; border-color: #92400E; }
+    .ri-gate-title {
+      font-size: 11px; font-weight: 700; color: #92400E;
+      letter-spacing: .05em; text-transform: uppercase; margin-bottom: 9px;
+    }
+    @media (prefers-color-scheme: dark) { .ri-gate-title { color: #FCD34D; } }
+    :root[data-theme="dark"] .ri-gate-title { color: #FCD34D; }
+    .ri-gate label {
+      display: flex; gap: 9px; align-items: flex-start;
+      font-size: 13px; color: var(--text); cursor: pointer;
+      margin-bottom: 8px; line-height: 1.45;
+    }
+    .ri-gate label:last-child { margin-bottom: 0; }
+    .ri-gate input[type="checkbox"] {
+      margin-top: 2px; flex-shrink: 0; accent-color: #7C3AED;
+      width: 15px; height: 15px;
+    }
+    .ri-gate-locked { opacity: .45; pointer-events: none; }
     .card-monday-btn {
       font-size: 11px; font-weight: 600; color: #0073EA;
       background: #E8F3FF; border: 1px solid #B3D4F8;
@@ -643,11 +670,29 @@
 <div class="ri-modal-overlay" id="riModalOverlay">
   <div class="ri-modal">
     <h3>Send to ReachInbox Campaign</h3>
-    <select id="riCampaignSelect"></select>
-    <p id="riModalStatus" style="font-size:13px;color:var(--text-muted);margin:0 0 14px;min-height:18px;"></p>
+
+    <!-- ── Approval gate ── -->
+    <div class="ri-gate">
+      <div class="ri-gate-title">⚠ Your Approval Required</div>
+      <label>
+        <input type="checkbox" id="gateEmailApproved" onchange="checkRiGate()">
+        I have read the Stage&nbsp;1 email in this ReachInbox campaign and I approve it to send.
+      </label>
+      <label>
+        <input type="checkbox" id="gateReplyPaused" onchange="checkRiGate()">
+        Replies from prospects are set to pause the sequence — I will personally review and approve every first reply before responding.
+      </label>
+    </div>
+
+    <!-- ── Campaign picker (locked until gate is cleared) ── -->
+    <div id="riCampaignBlock" class="ri-gate-locked">
+      <select id="riCampaignSelect" onchange="checkRiGate()"></select>
+      <p id="riModalStatus" style="font-size:13px;color:var(--text-muted);margin:0 0 14px;min-height:18px;"></p>
+    </div>
+
     <div class="ri-modal-actions">
       <button class="ri-modal-cancel" onclick="closeRiModal()">Cancel</button>
-      <button class="ri-modal-send" id="riSendBtn" onclick="confirmRiSend()">Send Leads</button>
+      <button class="ri-modal-send" id="riSendBtn" onclick="confirmRiSend()" disabled>Send Leads</button>
     </div>
   </div>
 </div>
@@ -975,10 +1020,27 @@
   let riPendingLead = null;   // single lead object (mode='one')
   let riPendingBtnId = null;  // card button id (mode='one')
 
+  function checkRiGate() {
+    const emailOk  = document.getElementById('gateEmailApproved').checked;
+    const replyOk  = document.getElementById('gateReplyPaused').checked;
+    const block    = document.getElementById('riCampaignBlock');
+    const select   = document.getElementById('riCampaignSelect');
+    const sendBtn  = document.getElementById('riSendBtn');
+    const gateOpen = emailOk && replyOk;
+    block.classList.toggle('ri-gate-locked', !gateOpen);
+    sendBtn.disabled = !gateOpen || !select.value;
+  }
+
   async function openRiModal(mode, leadJson, btnId) {
     riPendingMode = mode;
     riPendingLead = leadJson ? JSON.parse(leadJson) : null;
     riPendingBtnId = btnId || null;
+
+    // Reset approval gate every time the modal opens
+    document.getElementById('gateEmailApproved').checked = false;
+    document.getElementById('gateReplyPaused').checked   = false;
+    document.getElementById('riCampaignBlock').classList.add('ri-gate-locked');
+    document.getElementById('riSendBtn').disabled = true;
 
     const overlay = document.getElementById('riModalOverlay');
     const select  = document.getElementById('riCampaignSelect');
@@ -1006,7 +1068,7 @@
         select.appendChild(opt);
       });
       status.textContent = '';
-      document.getElementById('riSendBtn').disabled = false;
+      checkRiGate(); // send button only unlocks if approval gate is already checked
     } catch (err) {
       status.textContent = '✗ ' + err.message;
       document.getElementById('riSendBtn').disabled = true;
