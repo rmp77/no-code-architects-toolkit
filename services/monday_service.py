@@ -53,10 +53,10 @@ def _gql(query, variables, token):
 
 def _find_board(workspace_id, token):
     q = """
-    query($workspace_id: [ID]) {
-      boards(workspace_id: $workspace_id, limit: 50) { id name }
+    query($workspace_ids: [ID]) {
+      boards(workspace_ids: $workspace_ids, limit: 50) { id name }
     }"""
-    data = _gql(q, {"workspace_id": [str(workspace_id)]}, token)
+    data = _gql(q, {"workspace_ids": [str(workspace_id)]}, token)
     for b in data.get("boards", []):
         if b["name"] == BOARD_NAME:
             return b["id"]
@@ -205,10 +205,10 @@ def push_lead(board_id, col_ids, lead, token):
 
 def _find_funnel_board(workspace_id, token):
     q = """
-    query($workspace_id: [ID]) {
-      boards(workspace_id: $workspace_id, limit: 50) { id name }
+    query($workspace_ids: [ID]) {
+      boards(workspace_ids: $workspace_ids, limit: 50) { id name }
     }"""
-    data = _gql(q, {"workspace_id": [str(workspace_id)]}, token)
+    data = _gql(q, {"workspace_ids": [str(workspace_id)]}, token)
     for b in data.get("boards", []):
         if b["name"] == FUNNEL_BOARD:
             return b["id"]
