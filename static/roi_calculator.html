@@ -372,8 +372,8 @@ kbd.ekey {
           <span class="opt-key">C</span>
           <span class="opt-icon">🔑</span>
           <div class="opt-body">
-            <span class="opt-title">I'm building my pipeline — newer to wholesaling</span>
-            <span class="opt-desc">I've done a few deals or none yet and need more motivated seller conversations</span>
+            <span class="opt-title">I'm building my pipeline — newer to the business</span>
+            <span class="opt-desc">I've landed a few clients or none yet and need more inbound customer conversations</span>
           </div>
         </button>
       </div>
@@ -384,7 +384,7 @@ kbd.ekey {
   <div class="slide" id="s-ads-spend">
     <div class="si">
       <p class="q-text">How much do you spend on marketing each month?</p>
-      <p class="q-hint">Include Google Ads, Facebook, direct mail, cold calling services, list subscriptions (BatchLeads, PropStream, etc.)</p>
+      <p class="q-hint">Include Google Ads, Facebook Ads, direct mail, and any other paid marketing channels</p>
       <div class="uline-wrap">
         <span class="uline-pfx">$</span>
         <input class="uline" type="number" id="ads-spend" min="0" step="100" placeholder="2500" inputmode="numeric" oninput="syncBtn('ads-spend','btn-ads-spend')">
@@ -400,8 +400,8 @@ kbd.ekey {
   <!-- ADS: calls -->
   <div class="slide" id="s-ads-calls">
     <div class="si">
-      <p class="q-text">How many inbound motivated seller calls does that generate each month?</p>
-      <p class="q-hint">Calls from people looking to sell — not outbound calls your team is making</p>
+      <p class="q-text">How many inbound calls or leads does that generate each month?</p>
+      <p class="q-hint">Potential customers reaching out to you — not calls your team makes outbound</p>
       <div class="uline-wrap">
         <input class="uline" type="number" id="ads-calls" min="1" step="1" placeholder="14" inputmode="numeric" style="padding-left:0" oninput="syncBtn('ads-calls','btn-ads-calls')">
         <span class="uline-sfx">calls</span>
@@ -482,8 +482,8 @@ kbd.ekey {
   <!-- BEGINNER: convos -->
   <div class="slide" id="s-bg-convos">
     <div class="si">
-      <p class="q-text">How many motivated seller conversations did you have last month?</p>
-      <p class="q-hint">Two-way conversations with someone who wants to sell — not cold calls your team made to a list</p>
+      <p class="q-text">How many inbound prospect conversations did you have last month?</p>
+      <p class="q-hint">Potential customers who reached out or responded to you — not cold calls you made to a list</p>
       <div class="uline-wrap">
         <input class="uline" type="number" id="bg-convos" min="0" step="1" placeholder="3" inputmode="numeric" oninput="syncBtn('bg-convos','btn-bg-convos')">
         <span class="uline-sfx">conversations</span>
@@ -759,10 +759,10 @@ function buildResult() {
     if (!spend || !calls) return;
 
     const cpc = spend / calls;
-    el('res-eye').textContent = 'Your cost per motivated seller call';
+    el('res-eye').textContent = 'Your cost per inbound call';
     el('res-big').textContent = fmt(cpc);
     el('res-big').className   = 'res-big ' + (cpc > 250 ? 'c-pain' : cpc > 100 ? 'c-warn' : 'c-ok');
-    el('res-copy').innerHTML  = `You spend ${fmt(spend)}/month and get ${Math.round(calls)} inbound seller calls. That's <strong>${fmt(cpc)}</strong> to get one motivated seller on the phone — before any staff time, follow-up, or deal costs.`;
+    el('res-copy').innerHTML  = `You spend ${fmt(spend)}/month and get ${Math.round(calls)} inbound calls. That's <strong>${fmt(cpc)}</strong> to get one qualified prospect on the phone — before any staff time, follow-up, or close costs.`;
 
     if (cpc > 150) {
       box('res-b1', cpc > 250 ? 'pain' : 'warn',
@@ -816,16 +816,16 @@ function buildResult() {
     const gap       = Math.max(0, needed - currentYr);
     const onPace    = currentYr >= needed;
 
-    el('res-eye').textContent = 'Motivated seller conversations needed this year';
+    el('res-eye').textContent = 'Inbound conversations needed this year';
     el('res-big').textContent = needed.toLocaleString();
     el('res-big').className   = 'res-big ' + (onPace ? 'c-ok' : 'c-pain');
-    el('res-copy').innerHTML  = `To close ${Math.round(target)} deals at a 25% close rate, you need <strong>${needed} seller conversations</strong> — about <strong>${neededMo}/month</strong>.`
+    el('res-copy').innerHTML  = `To close ${Math.round(target)} clients at a 25% close rate, you need <strong>${needed} inbound conversations</strong> — about <strong>${neededMo}/month</strong>.`
       + (convos > 0 ? ` At your current pace, you're on track for ${currentYr} this year.` : '');
 
     if (gap > 0) {
       box('res-b1', 'pain', 'Your conversation gap',
         gap + ' conversations short',
-        `You need ${Math.ceil(gap/12)} more seller conversations per month to hit your target. Every month without them is a month of deals you won't close.`
+        `You need ${Math.ceil(gap/12)} more inbound conversations per month to hit your target. Every month without them is a month of clients you won't close.`
       );
       if (profit > 0) {
         const missedRev = Math.round(gap * 0.25) * profit;
@@ -835,7 +835,7 @@ function buildResult() {
         );
       }
       el('cta-h').textContent  = "You need more conversations. That's the only thing to fix right now.";
-      el('cta-sub').textContent = "Every deal starts with a motivated seller calling you. I generate those calls at a fixed per-call rate — you get the reps, close deals faster, and learn the business by doing it. Five minutes to see if your market qualifies.";
+      el('cta-sub').textContent = "Every client starts with an inbound call. I generate those calls at a fixed per-call rate — you get more conversations, close more clients, and grow faster. Five minutes to see if your market qualifies.";
     } else {
       el('cta-h').textContent  = "You're on pace. Let's talk about scaling it.";
       el('cta-sub').textContent = "Five minutes to see what consistent inbound volume looks like layered on top of what you're already doing.";
