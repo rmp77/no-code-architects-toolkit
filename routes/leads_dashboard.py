@@ -31,6 +31,11 @@ def dashboard():
         return f.read(), 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 
+@leads_dashboard_bp.route('/leads/config', methods=['GET'])
+def dashboard_config():
+    return jsonify({"maps_key": os.environ.get('GOOGLE_MAPS_API_KEY', '')})
+
+
 @leads_dashboard_bp.route('/leads/search', methods=['POST'])
 def dashboard_search():
     data = request.get_json() or {}

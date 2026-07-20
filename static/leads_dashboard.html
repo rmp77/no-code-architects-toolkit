@@ -1072,5 +1072,33 @@
     return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 </script>
+<script>
+(async () => {
+  try {
+    const res = await fetch('/leads/config');
+    const { maps_key } = await res.json();
+    if (!maps_key) return;
+    window.__mapsReadyResolve = null;
+    window.__mapsReady = new Promise(r => window.__mapsReadyResolve = r);
+    window.initPlacesAC = function() { window.__mapsReadyResolve(); };
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${maps_key}&libraries=places&callback=initPlacesAC`;
+    s.async = true; s.defer = true;
+    document.head.appendChild(s);
+    await window.__mapsReady;
+    const input = document.getElementById('location');
+    const ac = new google.maps.places.Autocomplete(input, {
+      types: ['(cities)'],
+      componentRestrictions: { country: 'us' }
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (place && place.formatted_address) {
+        input.value = place.formatted_address.replace(', USA', '');
+      }
+    });
+  } catch(e) {}
+})();
+</script>
 </body>
 </html>
