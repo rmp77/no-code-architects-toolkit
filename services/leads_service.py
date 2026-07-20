@@ -16,13 +16,16 @@ MV_VERIFY_URL = "https://api.millionverifier.com/api/v3/"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openai/gpt-4o-mini"
 LOCAL_BIZ_SEARCH_URL = "https://api.openwebninja.com/local-business-data/search"
+WEBSITE_CONTACTS_URL = "https://api.openwebninja.com/website-contacts-scraper/get-contacts"
 
 NEWS_BLOCKLIST = ["obituary", "wikipedia", "jobs.", "careers.", "lawsuit", "indictment"]
 
 SENIOR_KEYWORDS = [
     "owner", "founder", "ceo", "president", "coo", "cto", "cfo",
     "director", "manager", "principal", "partner", "vp",
-    "vice president", "head of", "chief", "proprietor", "operator", "managing"
+    "vice president", "head of", "chief", "proprietor", "operator", "managing",
+    "attorney", "lawyer", "counsel", "associate", "esquire",
+    "agent", "broker", "advisor", "consultant", "realtor",
 ]
 
 NOISE_TYPES = {"point_of_interest", "establishment", "food", "store", "premise", "geocode"}
@@ -302,11 +305,51 @@ def _get_local_biz_email(name, address, owinja_key):
     return None
 
 
+def _get_website_contacts(website, owinja_key):
+    """Scrape a business website for contact emails via OpenWebNinja Website Contacts Scraper."""
+    if not website or not owinja_key:
+        return []
+    try:
+        r = requests.get(
+            WEBSITE_CONTACTS_URL,
+            params={"url": website},
+            headers={"x-api-key": owinja_key},
+            timeout=20
+        )
+        if not r.ok:
+            return []
+        data = r.json()
+        contacts_raw = data.get("data", {}).get("contacts", []) or data.get("contacts", [])
+        result = []
+        seen = set()
+        for c in contacts_raw:
+            email = c.get("email") or c.get("email_address")
+            if not email or email in seen:
+                continue
+            position = c.get("position") or c.get("title") or c.get("job_title") or ""
+            if not is_senior(position):
+                continue
+            seen.add(email)
+            result.append({
+                "first_name": c.get("first_name", ""),
+                "last_name": c.get("last_name", ""),
+                "email": email,
+                "position": position,
+                "source": "website_scraper",
+            })
+        return result
+    except Exception as e:
+        logger.warning(f"Website contacts scraper failed for {website}: {e}")
+    return []
+
+
 def enrich_candidate(candidate, maps_key, prospeo_key, owinja_key=None, blitz_key=None, mv_key=None, openrouter_key=None):
     try:
         details = get_place_details(candidate["place_id"], maps_key)
         domain = extract_domain(details.get("website"))
         contacts, company_phone = get_domain_contacts(domain, blitz_key=blitz_key, prospeo_key=prospeo_key)
+        if not contacts and owinja_key and details.get("website"):
+            contacts = _get_website_contacts(details["website"], owinja_key)
         if mv_key and contacts:
             for c in contacts:
                 if c.get("email") and not c.get("verification_status"):
