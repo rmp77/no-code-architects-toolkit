@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Manager</title>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────── */
+    :root {
+      --bg:           #ECEEF5;
+      --surface:      #FFFFFF;
+      --sidebar-bg:   #0B1220;
+      --sidebar-surf: #131E30;
+      --sidebar-text: #6B83A4;
+      --sidebar-head: #FFFFFF;
+      --accent:       #4361EE;
+      --accent-h:     #3150D9;
+      --accent-soft:  #EEF1FF;
+      --accent-txt:   #4361EE;
+      --text-1:       #111827;
+      --text-2:       #6B7280;
+      --text-3:       #9CA3AF;
+      --border:       #E5E7EB;
+      --ok:           #059669;
+      --ok-bg:        #ECFDF5;
+      --warn:         #D97706;
+      --warn-bg:      #FFFBEB;
+      --err:          #DC2626;
+      --err-bg:       #FEF2F2;
+      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #080D1A;
+        --surface:      #0E1524;
+        --sidebar-bg:   #050A14;
+        --sidebar-surf: #0B1220;
+        --sidebar-text: #4A6080;
+        --sidebar-head: #E8EEFF;
+        --accent-soft:  #131D42;
+        --accent-txt:   #7B98FF;
+        --text-1:       #E4EAFF;
+        --text-2:       #6B83A4;
+        --text-3:       #3A4F6A;
+        --border:       #182238;
+        --ok-bg:        #022C22;
+        --warn-bg:      #292100;
+        --err-bg:       #2D0A0A;
+        --shadow:       0 1px 3px rgba(0,0,0,.5);
+      }
+    }
+    :root[data-theme="light"] {
+      --bg:#ECEEF5;--surface:#FFF;--sidebar-bg:#0B1220;--sidebar-surf:#131E30;
+      --sidebar-text:#6B83A4;--sidebar-head:#FFF;--accent-soft:#EEF1FF;--accent-txt:#4361EE;
+      --text-1:#111827;--text-2:#6B7280;--text-3:#9CA3AF;
+      --border:#E5E7EB;--ok-bg:#ECFDF5;--warn-bg:#FFFBEB;--err-bg:#FEF2F2;
+      --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+    }
+    :root[data-theme="dark"] {
+      --bg:#080D1A;--surface:#0E1524;--sidebar-bg:#050A14;--sidebar-surf:#0B1220;
+      --sidebar-text:#4A6080;--sidebar-head:#E8EEFF;--accent-soft:#131D42;--accent-txt:#7B98FF;
+      --text-1:#E4EAFF;--text-2:#6B83A4;--text-3:#3A4F6A;
+      --border:#182238;--ok-bg:#022C22;--warn-bg:#292100;--err-bg:#2D0A0A;
+      --shadow:0 1px 3px rgba(0,0,0,.5);
+    }
+
+    /* ── RESET ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      background: var(--bg); color: var(--text-1);
+      display: flex; overflow: hidden;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────── */
+    .sidebar {
+      width: 240px; min-width: 240px; height: 100vh;
+      background: var(--sidebar-bg);
+      padding: 22px 16px;
+      display: flex; flex-direction: column; gap: 0;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 4px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text { color: var(--sidebar-head); font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .logo-sub  { color: var(--sidebar-text); font-size: 11px; }
+
+    .nav { margin-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-label {
+      color: var(--sidebar-text); font-size: 10px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 12px 8px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+      color: var(--sidebar-text); cursor: pointer;
+      transition: background .15s, color .15s;
+      font-size: 13.5px; font-weight: 500; user-select: none;
+    }
+    .nav-item:hover { background: var(--sidebar-surf); color: var(--sidebar-head); }
+    .nav-item.active { background: var(--accent); color: #fff; }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-accounts { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.06); }
+    .sidebar-accounts-title { color: var(--sidebar-text); font-size: 10px; font-weight: 600; letter-spacing:.08em; text-transform:uppercase; padding: 0 4px 8px; }
+    .acc-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 4px; border-radius: 6px;
+      color: var(--sidebar-text); font-size: 12px;
+    }
+    .acc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      height: 56px; min-height: 56px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 12px;
+    }
+    .topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+    .theme-btn {
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px; cursor: pointer;
+      color: var(--text-2); font-size: 16px;
+      transition: background .15s;
+    }
+    .theme-btn:hover { background: var(--accent-soft); }
+
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* ── SECTION VIEWS ───────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── CARDS / TILES ────────────────────────────────── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 16px; }
+    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+
+    /* ── STATS ROW ───────────────────────────────────── */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+    .stat-label { font-size: 11px; color: var(--text-2); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+    .stat-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+    .stat-sub   { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* ── COMPOSER ─────────────────────────────────────── */
+    .composer-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+    @media (max-width: 900px) { .composer-grid { grid-template-columns: 1fr; } }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 9px 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--text-1); font-size: 13.5px; font-family: inherit;
+      transition: border-color .15s;
+      outline: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+    }
+    .field textarea { resize: vertical; min-height: 120px; }
+
+    .char-counter { font-size: 11px; color: var(--text-3); text-align: right; margin-top: 3px; }
+    .char-counter.warn { color: var(--warn); }
+    .char-counter.over { color: var(--err); }
+
+    .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-opt {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-radius: 8px;
+      border: 1px solid var(--border); cursor: pointer;
+      background: var(--bg); transition: border-color .15s, background .15s;
+      font-size: 13px;
+    }
+    .radio-opt input { display: none; }
+    .radio-opt.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-txt); }
+
+    .platform-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+    .pill {
+      padding: 5px 12px; border-radius: 20px;
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 12px; font-weight: 500;
+      background: var(--bg); transition: all .15s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .pill.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-txt); }
+
+    .btn {
+      padding: 9px 18px; border-radius: 8px; border: none;
+      font-size: 13.5px; font-weight: 600; cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-ghost {
+      background: none; border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .btn-ghost:hover { background: var(--accent-soft); color: var(--accent-txt); border-color: var(--accent); }
+    .btn-danger { background: var(--err-bg); color: var(--err); border: 1px solid transparent; }
+    .btn-danger:hover { background: var(--err); color: #fff; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* ── POST CARDS ──────────────────────────────────── */
+    .posts-list { display: flex; flex-direction: column; gap: 12px; }
+    .post-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+      box-shadow: var(--shadow);
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .post-platform-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .post-body { flex: 1; min-width: 0; }
+    .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .post-account { font-size: 13px; font-weight: 600; }
+    .post-platform-tag { font-size: 10px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+    .post-text { color: var(--text-1); font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .post-text-clipped { max-height: 4.8em; overflow: hidden; position: relative; }
+    .post-text-clipped::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 24px;
+      background: linear-gradient(transparent, var(--surface));
+    }
+    .post-meta { margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .post-time { font-size: 11px; color: var(--text-3); }
+    .post-link { font-size: 11px; color: var(--accent-txt); text-decoration: none; }
+    .post-link:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 12px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .badge-published { background: var(--ok-bg); color: var(--ok); }
+    .badge-scheduled  { background: var(--accent-soft); color: var(--accent-txt); }
+    .badge-failed     { background: var(--err-bg); color: var(--err); }
+
+    /* ── FILTER BAR ──────────────────────────────────── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-bar select {
+      padding: 7px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-1); font-size: 13px; cursor: pointer;
+    }
+    .filter-bar .spacer { flex: 1; }
+
+    /* ── SCHEDULE LIST ───────────────────────────────── */
+    .sched-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .sched-time-block { flex-shrink: 0; text-align: center; min-width: 52px; }
+    .sched-date { font-size: 11px; color: var(--text-3); font-weight: 500; }
+    .sched-hour { font-size: 15px; font-weight: 700; }
+    .sched-body { flex: 1; min-width: 0; }
+    .sched-acct { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+    .sched-text { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sched-actions { display: flex; gap: 6px; align-items: center; }
+
+    /* ── ACCOUNTS GRID ───────────────────────────────── */
+    .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .account-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px;
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
+    }
+    .account-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .account-name { font-size: 14px; font-weight: 600; }
+    .account-handle { font-size: 12px; color: var(--text-2); }
+    .account-platform { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+    .account-sub-list { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+    .account-sub { font-size: 11px; color: var(--text-2); padding: 3px 6px; background: var(--bg); border-radius: 5px; }
+
+    /* ── EMPTY / LOADING ─────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-3); font-size: 13px;
+    }
+    .empty-icon { font-size: 32px; margin-bottom: 8px; }
+    .loading { text-align: center; padding: 30px; color: var(--text-3); font-size: 13px; }
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite;
+      margin-right: 6px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ───────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 12px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      transition: opacity .3s, transform .3s;
+      opacity: 0; pointer-events: none; transform: translateY(8px);
+      z-index: 9999; max-width: 320px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.ok  { background: var(--ok-bg); color: var(--ok); }
+    #toast.err { background: var(--err-bg); color: var(--err); }
+
+    /* ── PLATFORM COLORS ─────────────────────────────── */
+    .p-twitter   { background: #E7F3FF; color: #1D9BF0; }
+    .p-bluesky   { background: #E8F4FF; color: #0085FF; }
+    .p-instagram { background: #FFF0F7; color: #E1306C; }
+    .p-facebook  { background: #EEF3FF; color: #1877F2; }
+    .p-linkedin  { background: #EEF5FF; color: #0A66C2; }
+    .p-tiktok    { background: #F0FFFE; color: #010101; }
+    .p-youtube   { background: #FFF0F0; color: #FF0000; }
+    .p-pinterest { background: #FFF0F0; color: #E60023; }
+    .p-threads   { background: #F3F0FF; color: #090909; }
+    .p-default   { background: var(--accent-soft); color: var(--accent); }
+
+    /* ── MISC ────────────────────────────────────────── */
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .section-title  { font-size: 18px; font-weight: 700; }
+    .section-sub    { font-size: 13px; color: var(--text-2); }
+    .mt-12 { margin-top: 12px; }
+    .text-right { text-align: right; }
+    .flex-gap { display: flex; gap: 8px; align-items: center; }
+    .w-full { width: 100%; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+    .error-box {
+      background: var(--err-bg); border: 1px solid var(--err);
+      color: var(--err); border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">📢</div>
+    <div>
+      <div class="logo-text">Social Manager</div>
+      <div class="logo-sub">Powered by Blotato</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-label">Manage</div>
+    <div class="nav-item active" data-view="compose" onclick="switchView('compose')">
+      <span class="nav-icon">✏️</span> Compose
+    </div>
+    <div class="nav-item" data-view="posts" onclick="switchView('posts')">
+      <span class="nav-icon">📋</span> Posts
+    </div>
+    <div class="nav-item" data-view="scheduled" onclick="switchView('scheduled')">
+      <span class="nav-icon">📅</span> Scheduled
+    </div>
+    <div class="nav-item" data-view="accounts" onclick="switchView('accounts')">
+      <span class="nav-icon">👤</span> Accounts
+    </div>
+  </nav>
+
+  <div class="sidebar-accounts" id="sidebar-accts">
+    <div class="sidebar-accounts-title">Connected</div>
+    <div id="sidebar-acct-list" style="color:var(--sidebar-text);font-size:12px;padding:4px;">
+      Loading…
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Compose Post</div>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+
+  <div class="content">
+    <div id="toast"></div>
+
+    <!-- ── COMPOSE VIEW ──────────────────────────────── -->
+    <div class="view active" id="view-compose">
+      <div class="section-header">
+        <div>
+          <div class="section-title">New Post</div>
+          <div class="section-sub">Publish to any connected platform</div>
+        </div>
+      </div>
+
+      <div class="composer-grid">
+        <!-- Left: Editor -->
+        <div>
+          <div class="card">
+            <div id="compose-error" class="error-box" style="display:none;"></div>
+
+            <div class="field">
+              <label>Account</label>
+              <select id="compose-account" onchange="onAccountChange()">
+                <option value="">— Select account —</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Post Content</label>
+              <textarea id="compose-text" placeholder="What's on your mind?" oninput="updateCharCount()"></textarea>
+              <div class="char-counter" id="char-counter">0 / ∞ chars</div>
+            </div>
+
+            <div class="field">
+              <label>Media URLs <span style="font-weight:400;color:var(--text-3)">(one per line)</span></label>
+              <textarea id="compose-media" placeholder="https://example.com/image.jpg" style="min-height:60px;"></textarea>
+            </div>
+
+            <!-- Platform-specific extras -->
+            <div id="extras-facebook" class="field" style="display:none;">
+              <label>Page ID <span style="font-weight:400;color:var(--text-3)">(required for Facebook)</span></label>
+              <select id="compose-page-id">
+                <option value="">— Select page —</option>
+              </select>
+            </div>
+            <div id="extras-linkedin" class="field" style="display:none;">
+              <label>Company Page <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+              <select id="compose-li-page">
+                <option value="">Personal profile</option>
+              </select>
+            </div>
+            <div id="extras-tiktok" style="display:none;">
+              <div class="field">
+                <label>Privacy Level</label>
+                <select id="compose-tiktok-privacy">
+                  <option value="PUBLIC_TO_EVERYONE">Public</option>
+                  <option value="FOLLOWER_OF_CREATOR">Followers only</option>
+                  <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
+                  <option value="SELF_ONLY">Private (self only)</option>
+                </select>
+              </div>
+            </div>
+            <div id="extras-youtube" style="display:none;">
+              <div class="field">
+                <label>Video Title</label>
+                <input type="text" id="compose-yt-title" placeholder="Enter video title">
+              </div>
+              <div class="field">
+                <label>Privacy</label>
+                <select id="compose-yt-privacy">
+                  <option value="public">Public</option>
+                  <option value="unlisted">Unlisted</option>
+                  <option value="private">Private</option>
+                </select>
+              </div>
+            </div>
+            <div id="extras-pinterest" style="display:none;">
+              <div class="field">
+                <label>Board ID</label>
+                <input type="text" id="compose-pin-board" placeholder="Board ID">
+              </div>
+              <div class="field">
+                <label>Title <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+                <input type="text" id="compose-pin-title" placeholder="Pin title">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Publish options -->
+        <div>
+          <div class="card">
+            <div class="card-title">Publish Options</div>
+
+            <div class="field">
+              <label>When</label>
+              <div class="radio-group">
+                <label class="radio-opt selected" id="opt-now">
+                  <input type="radio" name="when" value="now" checked onchange="onWhenChange()">
+                  Now
+                </label>
+                <label class="radio-opt" id="opt-schedule">
+                  <input type="radio" name="when" value="schedule" onchange="onWhenChange()">
+                  Schedule
+                </label>
+                <label class="radio-opt" id="opt-queue">
+                  <input type="radio" name="when" value="queue" onchange="onWhenChange()">
+                  Next Slot
+                </label>
+              </div>
+            </div>
+
+            <div class="field" id="schedule-dt-field" style="display:none;">
+              <label>Date & Time</label>
+              <input type="datetime-local" id="compose-datetime">
+            </div>
+
+            <hr class="divider">
+
+            <button class="btn btn-primary w-full" id="publish-btn" onclick="publishPost()">
+              Publish Now
+            </button>
+            <div style="margin-top:8px;font-size:11px;color:var(--text-3);text-align:center;" id="publish-hint">
+              Select an account and write your post to publish.
+            </div>
+          </div>
+
+          <div class="card mt-12">
+            <div class="card-title">Platform Tips</div>
+            <div id="platform-tips" style="font-size:12px;color:var(--text-2);line-height:1.7;">
+              Select an account to see platform-specific tips.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── POSTS VIEW ─────────────────────────────────── -->
+    <div class="view" id="view-posts">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Posts</div>
+          <div class="section-sub">Your recent published and failed posts</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="filter-status" onchange="loadPosts()">
+          <option value="">All statuses</option>
+          <option value="published">Published</option>
+          <option value="failed">Failed</option>
+        </select>
+        <select id="filter-platform" onchange="loadPosts()">
+          <option value="">All platforms</option>
+          <option value="twitter">Twitter/X</option>
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="facebook">Facebook</option>
+          <option value="tiktok">TikTok</option>
+          <option value="youtube">YouTube</option>
+          <option value="pinterest">Pinterest</option>
+          <option value="threads">Threads</option>
+          <option value="bluesky">Bluesky</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadPosts()">↺ Refresh</button>
+      </div>
+
+      <div id="posts-list" class="posts-list">
+        <div class="loading"><span class="spinner"></span>Loading posts…</div>
+      </div>
+      <div id="posts-load-more" style="text-align:center;margin-top:16px;display:none;">
+        <button class="btn btn-ghost btn-sm" onclick="loadMorePosts()">Load more</button>
+      </div>
+    </div>
+
+    <!-- ── SCHEDULED VIEW ─────────────────────────────── -->
+    <div class="view" id="view-scheduled">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Scheduled Posts</div>
+          <div class="section-sub">Upcoming posts in your queue</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-ghost btn-sm" onclick="loadSchedules()">↺ Refresh</button>
+      </div>
+
+      <div id="schedules-list" class="posts-list">
+        <div class="loading"><span class="spinner"></span>Loading schedules…</div>
+      </div>
+      <div id="sched-load-more" style="text-align:center;margin-top:16px;display:none;">
+        <button class="btn btn-ghost btn-sm" onclick="loadMoreSchedules()">Load more</button>
+      </div>
+    </div>
+
+    <!-- ── ACCOUNTS VIEW ──────────────────────────────── -->
+    <div class="view" id="view-accounts">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Connected Accounts</div>
+          <div class="section-sub">Social media profiles linked to your workspace</div>
+        </div>
+      </div>
+      <div id="accounts-grid" class="accounts-grid">
+        <div class="loading"><span class="spinner"></span>Loading accounts…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ───────────────────────────────────────────── */
+let allAccounts = [];
+let postsCursor = null;
+let schedsCursor = null;
+let currentTheme = null;
+
+const PLATFORM_TIPS = {
+  twitter:   '280 character limit. Supports threads via additional posts. Images and videos welcome.',
+  bluesky:   '300 character limit. Supports threads. Clean, text-first platform.',
+  threads:   '500 character limit. Optional reply control. Growing engagement platform.',
+  instagram: '2,200 character limit. Use up to 10 images for carousel. Reels and Stories supported.',
+  facebook:  'Requires a Page ID. Supports link previews. Reels and Stories available.',
+  linkedin:  '3,000 character limit. Post to personal profile or company page. Great for B2B.',
+  tiktok:    'Video-first. Set privacy level. Multiple optional flags for brand/AI content.',
+  youtube:   'Video required. Title is mandatory. Set privacy: public, unlisted, or private.',
+  pinterest: 'Image required. Board ID needed. Title and alt text recommended.',
+};
+
+const CHAR_LIMITS = {
+  twitter: 280, bluesky: 300, threads: 500,
+  instagram: 2200, facebook: 63206, linkedin: 3000,
+  tiktok: 2200, pinterest: 500, youtube: 5000,
+};
+
+const PLATFORM_EMOJI = {
+  twitter: '𝕏', bluesky: '🦋', threads: '🧵', instagram: '📸',
+  facebook: '👤', linkedin: '💼', tiktok: '🎵', youtube: '▶️',
+  pinterest: '📌',
+};
+
+/* ── INIT ────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  restoreTheme();
+  loadAccounts();
+  loadPosts();
+  loadSchedules();
+});
+
+/* ── THEME ───────────────────────────────────────────── */
+function restoreTheme() {
+  const saved = localStorage.getItem('smDashTheme');
+  if (saved) setTheme(saved);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('smDashTheme', t);
+}
+
+/* ── NAV ─────────────────────────────────────────────── */
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelector(`[data-view="${name}"]`).classList.add('active');
+  const titles = { compose:'Compose Post', posts:'Posts', scheduled:'Scheduled', accounts:'Accounts' };
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+}
+
+/* ── TOAST ───────────────────────────────────────────── */
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+/* ── PLATFORM HELPERS ────────────────────────────────── */
+function platformClass(p) { return 'p-' + (p || 'default'); }
+function platformEmoji(p) { return PLATFORM_EMOJI[p] || '📣'; }
+
+function platformColor(p) {
+  const colors = {
+    twitter:'#1D9BF0', bluesky:'#0085FF', instagram:'#E1306C',
+    facebook:'#1877F2', linkedin:'#0A66C2', tiktok:'#010101',
+    youtube:'#FF0000', pinterest:'#E60023', threads:'#090909',
+  };
+  return colors[p] || '#4361EE';
+}
+
+/* ── ACCOUNTS ────────────────────────────────────────── */
+async function loadAccounts() {
+  try {
+    const r = await fetch('/social/accounts');
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    allAccounts = Array.isArray(data) ? data : (data.accounts || data.data || []);
+    renderAccountsView();
+    renderSidebar();
+    populateComposeDropdown();
+  } catch (e) {
+    document.getElementById('sidebar-acct-list').textContent = 'Error loading';
+    document.getElementById('accounts-grid').innerHTML =
+      `<div class="error-box">Failed to load accounts: ${e.message}</div>`;
+  }
+}
+
+function renderSidebar() {
+  const el = document.getElementById('sidebar-acct-list');
+  if (!allAccounts.length) { el.textContent = 'None connected'; return; }
+  el.innerHTML = allAccounts.map(a => `
+    <div class="acc-badge">
+      <div class="acc-dot" style="background:${platformColor(a.platform)}"></div>
+      <span>${a.username || a.displayName || a.name || a.id}</span>
+    </div>
+  `).join('');
+}
+
+function populateComposeDropdown() {
+  const sel = document.getElementById('compose-account');
+  sel.innerHTML = '<option value="">— Select account —</option>' +
+    allAccounts.map(a => {
+      const label = `${platformEmoji(a.platform)} ${a.username || a.displayName || a.name} (${a.platform})`;
+      return `<option value="${a.id}" data-platform="${a.platform}" data-subs='${JSON.stringify(a.subaccounts||[])}'>
+        ${label}
+      </option>`;
+    }).join('');
+}
+
+function renderAccountsView() {
+  const grid = document.getElementById('accounts-grid');
+  if (!allAccounts.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔌</div>No accounts connected yet.<br>Add accounts via Blotato.</div>`;
+    return;
+  }
+  grid.innerHTML = allAccounts.map(a => {
+    const subs = a.subaccounts || [];
+    const subHtml = subs.length ? `
+      <div class="account-sub-list">
+        ${subs.map(s => `<div class="account-sub">${s.name || s.id}</div>`).join('')}
+      </div>` : '';
+    return `
+      <div class="account-card">
+        <div class="account-icon ${platformClass(a.platform)}">${platformEmoji(a.platform)}</div>
+        <div>
+          <div class="account-platform">${a.platform}</div>
+          <div class="account-name">${a.displayName || a.name || ''}</div>
+          <div class="account-handle">@${a.username || a.id}</div>
+        </div>
+        ${subHtml}
+      </div>`;
+  }).join('');
+}
+
+/* ── COMPOSE ─────────────────────────────────────────── */
+function onAccountChange() {
+  const sel = document.getElementById('compose-account');
+  const opt = sel.options[sel.selectedIndex];
+  const platform = opt?.dataset?.platform || '';
+  let subs = [];
+  try { subs = JSON.parse(opt?.dataset?.subs || '[]'); } catch {}
+
+  // Hide all extras
+  ['facebook','linkedin','tiktok','youtube','pinterest'].forEach(p => {
+    document.getElementById('extras-' + p).style.display = 'none';
+  });
+
+  // Show relevant extras
+  if (platform === 'facebook') {
+    document.getElementById('extras-facebook').style.display = '';
+    const pageEl = document.getElementById('compose-page-id');
+    pageEl.innerHTML = '<option value="">— Select page —</option>' +
+      subs.map(s => `<option value="${s.id}">${s.name || s.id}</option>`).join('');
+  }
+  if (platform === 'linkedin') {
+    document.getElementById('extras-linkedin').style.display = '';
+    const liEl = document.getElementById('compose-li-page');
+    liEl.innerHTML = '<option value="">Personal profile</option>' +
+      subs.map(s => `<option value="${s.id}">${s.name || s.id}</option>`).join('');
+  }
+  if (platform === 'tiktok') document.getElementById('extras-tiktok').style.display = '';
+  if (platform === 'youtube') document.getElementById('extras-youtube').style.display = '';
+  if (platform === 'pinterest') document.getElementById('extras-pinterest').style.display = '';
+
+  // Update tips
+  const tips = PLATFORM_TIPS[platform] || 'Select an account to see platform-specific tips.';
+  document.getElementById('platform-tips').textContent = tips;
+
+  updateCharCount();
+  updatePublishBtn();
+}
+
+function updateCharCount() {
+  const text = document.getElementById('compose-text').value;
+  const sel = document.getElementById('compose-account');
+  const opt = sel.options[sel.selectedIndex];
+  const platform = opt?.dataset?.platform || '';
+  const limit = CHAR_LIMITS[platform] || null;
+  const el = document.getElementById('char-counter');
+  const len = text.length;
+  if (limit) {
+    el.textContent = `${len} / ${limit} chars`;
+    el.className = 'char-counter' + (len > limit ? ' over' : len > limit * 0.9 ? ' warn' : '');
+  } else {
+    el.textContent = `${len} chars`;
+    el.className = 'char-counter';
+  }
+  updatePublishBtn();
+}
+
+function updatePublishBtn() {
+  const accountId = document.getElementById('compose-account').value;
+  const text = document.getElementById('compose-text').value.trim();
+  const btn = document.getElementById('publish-btn');
+  const hint = document.getElementById('publish-hint');
+  btn.disabled = !accountId || !text;
+  if (!accountId) hint.textContent = 'Select an account first.';
+  else if (!text) hint.textContent = 'Write your post content.';
+  else hint.textContent = '';
+}
+
+function onWhenChange() {
+  const val = document.querySelector('input[name="when"]:checked').value;
+  document.getElementById('schedule-dt-field').style.display = val === 'schedule' ? '' : 'none';
+  document.getElementById('publish-btn').textContent =
+    val === 'now' ? 'Publish Now' :
+    val === 'queue' ? 'Add to Queue' : 'Schedule Post';
+  document.querySelectorAll('.radio-opt').forEach(el => el.classList.remove('selected'));
+  document.getElementById('opt-' + val).classList.add('selected');
+}
+
+async function publishPost() {
+  const accountId = document.getElementById('compose-account').value;
+  const text = document.getElementById('compose-text').value.trim();
+  if (!accountId || !text) return;
+
+  const sel = document.getElementById('compose-account');
+  const opt = sel.options[sel.selectedIndex];
+  const platform = opt?.dataset?.platform || '';
+  const when = document.querySelector('input[name="when"]:checked').value;
+
+  const mediaRaw = document.getElementById('compose-media').value.trim();
+  const mediaUrls = mediaRaw ? mediaRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+  const payload = { accountId, platform, text, mediaUrls };
+
+  if (when === 'schedule') {
+    const dt = document.getElementById('compose-datetime').value;
+    if (!dt) { toast('Pick a date/time to schedule', 'err'); return; }
+    payload.scheduledTime = new Date(dt).toISOString();
+  } else if (when === 'queue') {
+    payload.useNextFreeSlot = true;
+  }
+
+  // Platform-specific extras
+  if (platform === 'facebook') {
+    const pid = document.getElementById('compose-page-id').value;
+    if (pid) payload.pageId = pid;
+  }
+  if (platform === 'linkedin') {
+    const lid = document.getElementById('compose-li-page').value;
+    if (lid) payload.pageId = lid;
+  }
+  if (platform === 'tiktok') {
+    payload.privacyLevel = document.getElementById('compose-tiktok-privacy').value;
+  }
+  if (platform === 'youtube') {
+    payload.title = document.getElementById('compose-yt-title').value.trim() || text.substring(0, 100);
+    payload.privacyStatus = document.getElementById('compose-yt-privacy').value;
+  }
+  if (platform === 'pinterest') {
+    const bid = document.getElementById('compose-pin-board').value.trim();
+    if (bid) payload.boardId = bid;
+    const ptitle = document.getElementById('compose-pin-title').value.trim();
+    if (ptitle) payload.title = ptitle;
+  }
+
+  const btn = document.getElementById('publish-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Publishing…';
+  document.getElementById('compose-error').style.display = 'none';
+
+  try {
+    const r = await fetch('/social/compose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || JSON.stringify(data));
+
+    toast(when === 'now' ? 'Post published!' : when === 'queue' ? 'Added to queue!' : 'Post scheduled!', 'ok');
+    document.getElementById('compose-text').value = '';
+    document.getElementById('compose-media').value = '';
+    updateCharCount();
+    loadPosts();
+    if (when !== 'now') loadSchedules();
+  } catch (e) {
+    const errEl = document.getElementById('compose-error');
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = '';
+    toast('Failed to publish: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+/* ── POSTS ───────────────────────────────────────────── */
+let postsData = [];
+
+async function loadPosts(reset = true) {
+  if (reset) { postsCursor = null; postsData = []; }
+  const list = document.getElementById('posts-list');
+  if (reset) list.innerHTML = '<div class="loading"><span class="spinner"></span>Loading posts…</div>';
+
+  const status = document.getElementById('filter-status').value;
+  const platform = document.getElementById('filter-platform').value;
+  let url = '/social/posts?limit=20';
+  if (status) url += '&status=' + status;
+  if (platform) url += '&platform=' + platform;
+  if (postsCursor) url += '&cursor=' + encodeURIComponent(postsCursor);
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    const items = Array.isArray(data) ? data : (data.posts || data.data || data.items || []);
+    postsCursor = data.cursor || data.nextCursor || null;
+    postsData = reset ? items : [...postsData, ...items];
+    renderPosts(postsData);
+    document.getElementById('posts-load-more').style.display = postsCursor ? 'block' : 'none';
+  } catch (e) {
+    list.innerHTML = `<div class="error-box">Failed to load posts: ${e.message}</div>`;
+  }
+}
+
+function loadMorePosts() { loadPosts(false); }
+
+function renderPosts(items) {
+  const list = document.getElementById('posts-list');
+  if (!items.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>No posts found.<br>Try different filters.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(post => {
+    const state = post.state || {};
+    const status = state.type || post.status || 'published';
+    const platform = post.platform || post.account?.platform || '';
+    const account = post.account?.username || post.accountUsername || '';
+    const text = post.text || post.content || '';
+    const postUrl = state.postUrl || post.postUrl || post.url || '';
+    const errorMsg = state.errorMessage || post.errorMessage || '';
+    const time = post.postTime || post.scheduledTime || post.createdAt || '';
+
+    const badgeClass = status === 'published' ? 'badge-published' : status === 'failed' ? 'badge-failed' : 'badge-scheduled';
+    const timeStr = time ? new Date(time).toLocaleString() : '';
+
+    return `
+      <div class="post-card">
+        <div class="post-platform-icon ${platformClass(platform)}">${platformEmoji(platform)}</div>
+        <div class="post-body">
+          <div class="post-header">
+            <span class="post-account">${account || platform}</span>
+            <span class="post-platform-tag">${platform}</span>
+            <span class="badge ${badgeClass}">${status}</span>
+          </div>
+          <div class="post-text post-text-clipped">${escHtml(text)}</div>
+          <div class="post-meta">
+            ${timeStr ? `<span class="post-time">${timeStr}</span>` : ''}
+            ${postUrl ? `<a class="post-link" href="${escHtml(postUrl)}" target="_blank" rel="noopener">View post ↗</a>` : ''}
+            ${errorMsg ? `<span style="color:var(--err);font-size:11px;">${escHtml(errorMsg)}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── SCHEDULES ───────────────────────────────────────── */
+let schedsData = [];
+
+async function loadSchedules(reset = true) {
+  if (reset) { schedsCursor = null; schedsData = []; }
+  const list = document.getElementById('schedules-list');
+  if (reset) list.innerHTML = '<div class="loading"><span class="spinner"></span>Loading schedules…</div>';
+
+  let url = '/social/schedules?limit=20';
+  if (schedsCursor) url += '&cursor=' + encodeURIComponent(schedsCursor);
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    const items = Array.isArray(data) ? data : (data.schedules || data.data || data.items || []);
+    schedsCursor = data.cursor || data.nextCursor || null;
+    schedsData = reset ? items : [...schedsData, ...items];
+    renderSchedules(schedsData);
+    document.getElementById('sched-load-more').style.display = schedsCursor ? 'block' : 'none';
+  } catch (e) {
+    list.innerHTML = `<div class="error-box">Failed to load schedules: ${e.message}</div>`;
+  }
+}
+
+function loadMoreSchedules() { loadSchedules(false); }
+
+function renderSchedules(items) {
+  const list = document.getElementById('schedules-list');
+  if (!items.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>No scheduled posts.<br>Compose a post and pick a future time.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(sched => {
+    const schedTime = sched.scheduledTime || sched.time || '';
+    const dt = schedTime ? new Date(schedTime) : null;
+    const dateStr = dt ? dt.toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+    const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const platform = sched.account?.platform || sched.platform || '';
+    const acct = sched.account?.username || sched.account?.name || '';
+    const text = sched.draft?.text || sched.text || sched.content || '';
+    const id = sched.id || sched.scheduleId || '';
+
+    return `
+      <div class="sched-card" id="sched-${id}">
+        <div class="post-platform-icon ${platformClass(platform)}" style="font-size:18px;width:36px;height:36px;flex-shrink:0;">
+          ${platformEmoji(platform)}
+        </div>
+        <div class="sched-time-block">
+          <div class="sched-date">${dateStr}</div>
+          <div class="sched-hour">${timeStr}</div>
+        </div>
+        <div class="sched-body">
+          <div class="sched-acct">${acct || platform}</div>
+          <div class="sched-text">${escHtml(text)}</div>
+        </div>
+        <div class="sched-actions">
+          ${id ? `<button class="btn btn-danger btn-sm" onclick="deleteSchedule('${id}')">Delete</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function deleteSchedule(id) {
+  if (!confirm('Delete this scheduled post?')) return;
+  try {
+    const r = await fetch('/social/schedules/' + id, { method: 'DELETE' });
+    if (!r.ok) throw new Error(await r.text());
+    document.getElementById('sched-' + id)?.remove();
+    schedsData = schedsData.filter(s => (s.id || s.scheduleId) !== id);
+    toast('Schedule deleted', 'ok');
+  } catch (e) {
+    toast('Failed to delete: ' + e.message, 'err');
+  }
+}
+
+/* ── UTILS ───────────────────────────────────────────── */
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
