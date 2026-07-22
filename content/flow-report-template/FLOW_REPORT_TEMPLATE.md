@@ -166,23 +166,107 @@ You don't build the machine. You lease the output.
 
 ---
 
-## ANGLE 11 — The Flow Report: Duo Format (AI Anchors + Human Host)
+## ANGLE 11 — The Flow Report: Duo Format + Trading Floor Intro
 
-**Concept:** Upgrade the solo anchor episodes into a 3-part duo/duet format.
+**Concept:** 5-part episode: cinematic keyword trading floor intro → AI anchor duo open → human host live data → AI anchor close.
+
+The hook: keywords are commodities, just like stocks. The trading floor makes that analogy visceral before a single anchor speaks.
 
 ### Structure
 | Part | Who | What | Length |
 |---|---|---|---|
-| 1 — Open | Marcus + Claire (AI) | Greet each other, hand off to "our human host" | ~5 sec |
-| 2 — Live Data | Victor (human) | Screen recording: pulls up actual Google Ads CPC for today's city, says the number on camera | ~10-15 sec |
-| 3 — Close | Marcus or Claire (AI) | Delivers the rest of the Flow Report script with the real CPC number | ~15 sec |
+| 0A — Trading Floor Wide | B-roll (AI) | Busy trading floor, keyword tickers scrolling on screen | ~5 sec |
+| 0B — Trader Close-Up | B-roll (AI) | Trader on phone making "keyword deal" energy | ~5 sec |
+| 1A — Marcus Open | Marcus (AI) | Introduces himself, hands to Claire | ~5 sec |
+| 1B — Claire Open | Claire (AI) | Hands off to "our host" | ~4 sec |
+| 2 — Live Data | Victor (human) | Screen: live Google Keyword Planner CPC | ~13 sec |
+| 3 — Close | Marcus (AI) | Delivers the math and CTA, lip-synced via Seedance | ~10 sec |
 
 ### Why This Works
-- The AI anchors add brand consistency and production value
-- Victor's human segment adds credibility — it's a real screen, a real number, a real person
-- The handoff creates a "breaking news" feel that stops the scroll
-- Perfect for TikTok Duet and YouTube split-screen formats
-- AI does the daily heavy lifting; Victor records one 15-second selfie video per episode
+- The trading floor intro establishes the analogy: keywords = commodities, CPC = stock price
+- Keyword tickers make that concrete before a single anchor speaks
+- Marcus VO narrates over the floor footage — heard before seen (cinematic)
+- Victor's human segment adds credibility — real screen, real number, real person
+- Competitors can't replicate this without both AI toolchain + human authenticity
+- Perfect for TikTok, Reels, YouTube Shorts — stops the scroll in the first second
+
+### Trading Floor Script — Marcus VO (Part 0)
+```
+Sell my house fast. Stop foreclosure. Cash for houses.
+These aren't stock symbols. They're keywords —
+and just like stocks, the price is live every single day.
+```
+Duration: ~14 sec · Voice: Brooks · Plays over Part 0A + 0B + bleeds 4 sec into Part 1A
+
+### Keyword Ticker Overlays (add in CapCut over Part 0A and 0B)
+
+**Top title card** (0-4 sec, fade in/out):
+```
+KEYWORD TRADING FLOOR
+DAILY MARKET UPDATE — REAL ESTATE DIVISION
+```
+Style: white bold · red left accent bar · dark semi-transparent background
+
+**Bottom scrolling ticker** (full 0A + 0B duration, left → right scroll):
+```
+SELL MY HOUSE FAST $30 ↑  •  STOP FORECLOSURE $38 ↑↑  •  CASH FOR HOUSES $26 ↑  •  WE BUY HOUSES $22 →  •  BEHIND ON MORTGAGE $34 ↑  •  PRE-FORECLOSURE HELP $28 ↑  •  MOTIVATED SELLER LEADS $18 →  •  OFF MARKET PROPERTIES $11 ↑  •  WHOLESALE REAL ESTATE $9 ↑  •  PROBATE REAL ESTATE $8.50 ↑  •  TAX LIEN PROPERTIES $10 →  •  TIRED LANDLORD $12 ↑  •  INHERITED PROPERTY BUYERS $16 ↑  •  DISTRESSED PROPERTY $9.50 ↑  •  CASH HOME BUYERS $24 ↑
+```
+Style: white · dark red `#8B0000` background strip · full width · bottom of frame
+
+**Second ticker row** (offset, starts 2 sec in):
+```
+DALLAS TX $30/CLICK  •  HOUSTON TX $28  •  PHOENIX AZ $24  •  MIAMI FL $35  •  LA CA $42  •  NYC NY $48  •  ATLANTA GA $22  •  CHICAGO IL $26  •  DENVER CO $21  •  CHARLOTTE NC $19  •  NASHVILLE TN $20
+```
+
+**Full keyword reference list for the board (use on any graphic assets):**
+
+MOTIVATED SELLER — HIGH DEMAND (red)
+- SELL MY HOUSE FAST · $28–45/click · EXTREME competition
+- STOP FORECLOSURE · $32–55/click · EXTREME
+- FACING FORECLOSURE · $29–50/click · EXTREME
+- AVOID FORECLOSURE · $30–52/click · EXTREME
+- BEHIND ON MORTGAGE · $22–40/click · HIGH
+- PRE-FORECLOSURE HELP · $18–38/click · HIGH
+- CASH FOR HOUSES · $24–42/click · HIGH
+- WE BUY HOUSES · $20–38/click · HIGH
+- SELL HOUSE AS IS · $18–32/click · HIGH
+- CASH HOME BUYERS · $20–35/click · HIGH
+- HOME BUYERS NEAR ME · $22–38/click · HIGH
+
+WHOLESALE / INVESTOR (green)
+- WHOLESALE REAL ESTATE · $8–14/click · MED
+- OFF MARKET PROPERTIES · $10–18/click · MED
+- DISTRESSED PROPERTY · $8–16/click · MED
+- ABSENTEE OWNER HOMES · $10–20/click · MED
+- PROBATE REAL ESTATE · $8–18/click · LOW
+- TAX LIEN PROPERTIES · $10–22/click · LOW
+- TIRED LANDLORD · $8–15/click · MED
+- VACANT PROPERTY BUYER · $10–18/click · MED
+- INHERITED PROPERTY BUYERS · $14–25/click · MED
+- DIVORCE HOME SALE · $12–24/click · MED
+- SELL RENTAL PROPERTY FAST · $15–30/click · MED
+- FIRE DAMAGED HOMES · $8–18/click · LOW
+- ASSIGNMENT OF CONTRACT · $6–12/click · LOW
+- SUBJECT TO REAL ESTATE · $6–15/click · LOW
+- SELLER FINANCING HOMES · $8–18/click · LOW
+- FIX AND FLIP HOMES · $10–20/click · MED
+- VIRTUAL WHOLESALING · $5–12/click · LOW
+- SKIP TRACING SERVICES · $4–10/click · LOW
+- DRIVING FOR DOLLARS APP · $3–8/click · LOW
+- DIRECT MAIL REAL ESTATE · $3–8/click · LOW
+- CREATIVE FINANCING HOMES · $7–15/click · LOW
+- BRRRR STRATEGY HOMES · $5–12/click · LOW
+- LEASE OPTION HOMES · $8–18/click · LOW
+- OWNER FINANCE HOMES · $9–22/click · MED
+- LAND CONTRACT HOMES · $6–14/click · LOW
+
+MARKET SUPPORT (blue)
+- REO PROPERTIES · $12–22/click · MED
+- SHORT SALE HOMES · $14–26/click · MED
+- BANK OWNED HOMES · $12–24/click · MED
+- FORECLOSURE LISTINGS · $15–28/click · MED
+- MOTIVATED SELLER LEADS · $16–28/click · HIGH
+- REAL ESTATE INVESTOR LEADS · $12–22/click · MED
 
 ### Opening Script (AI Anchors — Part 1)
 ```
@@ -209,33 +293,48 @@ We're already in [CITY]. The ads are live.
 The flow is on. You lease the output. DM CALLS.
 ```
 
-### Production Flow (Duo Format)
+### Production Flow (Full Episode)
 
-**AI asset generation (runs in parallel):**
-1. Generate Part 1A audio: Marcus open line · Brooks voice · ~6 sec
-2. Generate Part 1B audio: Claire open line · Sloane voice · ~4 sec
-3. Generate Part 3 audio: Marcus/Claire close · ≤15 sec (use tight close script above)
-4. Generate Part 1A video: Kling 3.0 · Marcus image · 9:16 · 5 sec
-5. Generate Part 1B video: Kling 3.0 · Claire image · 9:16 · 5 sec
-6. Generate Part 3 video: Seedance 2.0 · anchor image + Part 3 audio · 9:16 · match audio duration
+**Step 1 — Generate trading floor b-roll (Kling 3.0, run in parallel):**
+- Part 0A: wide trading floor · "Cinematic wide-angle busy Wall Street trading floor, professionals on phones, monitors on walls, camera pushing in, financial district atmosphere"
+- Part 0B: trader close-up · "Confident financial professional on phone at desk, monitors in background, busy trading floor visible, cinematic bokeh"
+- Both: `kling3_0` · `9:16` · `5 sec`
 
-**Victor records Part 2 (~15 sec):**
+**Step 2 — Generate all audio (seed_audio, run in parallel):**
+- Part 0 VO: Marcus · Brooks voice · Trading floor script (~14 sec)
+- Part 1A: Marcus · Brooks voice · "Good morning. I'm Marcus Hale. [Claire] — what are wholesalers paying to advertise in [CITY] today?" (~6 sec)
+- Part 1B: Claire · Sloane voice · "Let's find out. Here's our host with today's number." (~4 sec)
+- Part 3: Marcus · Brooks voice · Tight close script · ≤15 sec
+
+**Step 3 — Generate anchor videos (run in parallel):**
+- Part 1A video: `kling3_0` · Marcus image · `9:16` · 5 sec
+- Part 1B video: `kling3_0` · Claire image · `9:16` · 5 sec
+- Part 3 video: `seedance_2_0` · Marcus image + Part 3 audio · `9:16` · match audio duration
+
+**Step 4 — Victor records Part 2 (~13 sec):**
 - Phone vertical (9:16), tripod or propped
-- Google Keyword Planner open on screen behind you or screen-share overlay
+- Google Keyword Planner open on screen behind you (or screen-share overlay on desktop)
 - Script: "Hey — I just pulled this live. Right now, bidding on 'sell my house fast [CITY]' — you're paying [CPC] per click. Every. Single. Click. Back to you."
-- Keep it 12–15 sec. Eyes to camera, not the screen.
+- Keep it 12–13 sec. Eyes to camera, not the screen.
 
-**CapCut assembly:**
+**Step 5 — CapCut assembly:**
 1. New project · 9:16 · 1080×1920 · 30fps
-2. Timeline order: `Part1A.mp4` → `Part1B.mp4` → `victor.mp4` → `Part3.mp4` (hard cuts, no transitions)
-3. Mute Part 1A, 1B, and Part 3 video tracks (Volume → 0)
-4. Add audio layer: `Part1A.wav` aligned to Part 1A clip · `Part1B.wav` to Part 1B · `Part3.wav` to Part 3
-5. Victor's clip stays at full volume
-6. Add lower-thirds text: "MARCUS HALE" / "CLAIRE BENNETT" / "LIVE DATA · GOOGLE KEYWORD PLANNER" (for Victor's segment)
-7. Auto-captions → English → clean up "$[CPC]" and "DM CALLS"
-8. Export: 1080p · 30fps · H.264
+2. Timeline order (hard cuts, no transitions):
+   `Part0A.mp4` → `Part0B.mp4` → `Part1A.mp4` → `Part1B.mp4` → `victor.mp4` → `Part3.mp4`
+3. Mute ALL Kling video tracks (0A, 0B, 1A, 1B) — Volume → 0. Part 3 Seedance keeps its audio.
+4. Add audio layer: `Part0_VO.wav` at 0:00 (runs ~14 sec, covers 0A + 0B + first 4 sec of 1A establishing shot)
+5. Add `Part1A_audio.wav` starting at ~14 sec
+6. Add `Part1B_audio.wav` starting at ~20 sec
+7. Victor's clip stays at full volume
+8. Text overlays for trading floor (see Keyword Ticker Overlays section above):
+   - Top title card (0–4 sec)
+   - Bottom scrolling ticker (0–10 sec)
+   - Second city ticker (2–10 sec)
+9. Lower-thirds: "MARCUS HALE" (Part 1A) · "CLAIRE BENNETT" (Part 1B) · "LIVE DATA · GOOGLE KEYWORD PLANNER" (Victor)
+10. Auto-captions → English → clean up "$[CPC]" and "DM CALLS"
+11. Export: 1080p · 30fps · H.264
 
-5. Post as single video via Blotato
+**Step 6 — Post:** Send to #rmp-social for GO, then schedule via Blotato at city local 8 AM
 
 ### On Automating the CPC Data
 **Short answer: semi-automatable, not fully.**
@@ -254,6 +353,6 @@ Options ranked by effort vs. accuracy:
 
 | Date | City | CPC | Anchor | Status |
 |---|---|---|---|---|
-| 2026-07-23 | Dallas, TX | $30 | Marcus | ✅ Proof complete |
+| 2026-07-22 | Dallas, TX | $30 | Marcus | ✅ All AI assets done · Victor records Part 2 · Assemble in CapCut |
 | | | | | |
 | | | | | |
