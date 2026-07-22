@@ -13,6 +13,7 @@
 | Marcus Hale (anchor image) | `cbee5198-a577-4d38-b4dc-6bf9f297d5fc` | Male, navy suit, news desk |
 | Claire Bennett (anchor image) | `f9453360-5a14-4b40-a371-a63b81fa60d6` | Female, charcoal blazer, same set |
 | Brooks voice (male) | `c2acff45-84b2-4974-892d-89fa2d4e5598` | Use for Marcus episodes |
+| Sloane voice (female) | `b57b22a0-f287-405b-bc82-6f08f5e6bb1f` | Use for Claire episodes |
 
 ---
 
@@ -79,8 +80,9 @@ the phone.
 
 **Tool:** `generate_audio` via Higgsfield  
 **Model:** `seed_audio`  
-**Voice ID:** `c2acff45-84b2-4974-892d-89fa2d4e5598` (Brooks · preset · male)  
-**Prompt:** Paste the Hook-Only Script with [CITY] and [CPC] filled in
+**Voice ID:** `c2acff45-84b2-4974-892d-89fa2d4e5598` (Brooks · preset · male) or `b57b22a0-f287-405b-bc82-6f08f5e6bb1f` (Sloane · preset · female) for Claire episodes  
+**Prompt:** Paste the Hook-Only Script with [CITY] and [CPC] filled in  
+**Critical:** Keep the audio clip under 15 seconds — Seedance 2.0 has a 15 sec max. The Hook-Only script should yield 12–14 sec at Brooks/Sloane's pace.
 
 Save the returned job ID — you'll need it in Step 4.
 
@@ -200,13 +202,39 @@ Back to you."
 ```
 
 ### Close Script (AI Anchor — Part 3)
-Same as the Hook-Only script — anchor delivers the math and the CTA.
+Must be ≤15 seconds for Seedance 2.0. Use this tight version (fills ~10-12 sec):
+```
+[CPC]. Per click. Gone. Every single click.
+We're already in [CITY]. The ads are live.
+The flow is on. You lease the output. DM CALLS.
+```
 
 ### Production Flow (Duo Format)
-1. Generate AI anchor opening (Marcus + Claire banter) — Higgsfield Kling 3.0 multi-shot
-2. Victor records his 15-second screen segment (phone or webcam)
-3. Generate AI anchor close (solo Marcus or Claire)
-4. Splice all three in CapCut: Part 1 → Part 2 → Part 3
+
+**AI asset generation (runs in parallel):**
+1. Generate Part 1A audio: Marcus open line · Brooks voice · ~6 sec
+2. Generate Part 1B audio: Claire open line · Sloane voice · ~4 sec
+3. Generate Part 3 audio: Marcus/Claire close · ≤15 sec (use tight close script above)
+4. Generate Part 1A video: Kling 3.0 · Marcus image · 9:16 · 5 sec
+5. Generate Part 1B video: Kling 3.0 · Claire image · 9:16 · 5 sec
+6. Generate Part 3 video: Seedance 2.0 · anchor image + Part 3 audio · 9:16 · match audio duration
+
+**Victor records Part 2 (~15 sec):**
+- Phone vertical (9:16), tripod or propped
+- Google Keyword Planner open on screen behind you or screen-share overlay
+- Script: "Hey — I just pulled this live. Right now, bidding on 'sell my house fast [CITY]' — you're paying [CPC] per click. Every. Single. Click. Back to you."
+- Keep it 12–15 sec. Eyes to camera, not the screen.
+
+**CapCut assembly:**
+1. New project · 9:16 · 1080×1920 · 30fps
+2. Timeline order: `Part1A.mp4` → `Part1B.mp4` → `victor.mp4` → `Part3.mp4` (hard cuts, no transitions)
+3. Mute Part 1A, 1B, and Part 3 video tracks (Volume → 0)
+4. Add audio layer: `Part1A.wav` aligned to Part 1A clip · `Part1B.wav` to Part 1B · `Part3.wav` to Part 3
+5. Victor's clip stays at full volume
+6. Add lower-thirds text: "MARCUS HALE" / "CLAIRE BENNETT" / "LIVE DATA · GOOGLE KEYWORD PLANNER" (for Victor's segment)
+7. Auto-captions → English → clean up "$[CPC]" and "DM CALLS"
+8. Export: 1080p · 30fps · H.264
+
 5. Post as single video via Blotato
 
 ### On Automating the CPC Data
