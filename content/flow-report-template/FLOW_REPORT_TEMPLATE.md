@@ -164,6 +164,64 @@ You don't build the machine. You lease the output.
 
 ---
 
+## ANGLE 11 — The Flow Report: Duo Format (AI Anchors + Human Host)
+
+**Concept:** Upgrade the solo anchor episodes into a 3-part duo/duet format.
+
+### Structure
+| Part | Who | What | Length |
+|---|---|---|---|
+| 1 — Open | Marcus + Claire (AI) | Greet each other, hand off to "our human host" | ~5 sec |
+| 2 — Live Data | Victor (human) | Screen recording: pulls up actual Google Ads CPC for today's city, says the number on camera | ~10-15 sec |
+| 3 — Close | Marcus or Claire (AI) | Delivers the rest of the Flow Report script with the real CPC number | ~15 sec |
+
+### Why This Works
+- The AI anchors add brand consistency and production value
+- Victor's human segment adds credibility — it's a real screen, a real number, a real person
+- The handoff creates a "breaking news" feel that stops the scroll
+- Perfect for TikTok Duet and YouTube split-screen formats
+- AI does the daily heavy lifting; Victor records one 15-second selfie video per episode
+
+### Opening Script (AI Anchors — Part 1)
+```
+MARCUS: Good morning, Claire.
+CLAIRE: Good morning, Marcus. Big question today — what's it actually 
+        costing wholesalers to advertise in [CITY] right now?
+MARCUS: Let's check in with our host.
+```
+
+### Human Host Script (Victor — Part 2)
+Victor faces camera, screen visible behind him or in screen-share overlay:
+```
+"Hey — I just pulled this up live in Google Keyword Planner.
+Right now, if you're bidding on 'sell my house fast [CITY]'...
+you're paying [CPC] per click. Every. Single. Click.
+Back to you."
+```
+
+### Close Script (AI Anchor — Part 3)
+Same as the Hook-Only script — anchor delivers the math and the CTA.
+
+### Production Flow (Duo Format)
+1. Generate AI anchor opening (Marcus + Claire banter) — Higgsfield Kling 3.0 multi-shot
+2. Victor records his 15-second screen segment (phone or webcam)
+3. Generate AI anchor close (solo Marcus or Claire)
+4. Splice all three in CapCut: Part 1 → Part 2 → Part 3
+5. Post as single video via Blotato
+
+### On Automating the CPC Data
+**Short answer: semi-automatable, not fully.**
+
+Options ranked by effort vs. accuracy:
+- **Victor's screen recording (recommended):** Most authentic. Real proof. Takes 60 seconds. The human element is the point — it's not a bug, it's a feature.
+- **Google Ads API:** Fully automatable if Victor has a Google Ads account. `KeywordPlanIdeaService` returns suggested CPC bids by keyword + location. Setup takes ~2 hours once. Returns daily data on demand.
+- **SEMrush/Ahrefs API:** Third-party CPC estimates. Accurate but not real-time. Good fallback if no Google Ads account.
+- **Google Keyword Planner (manual):** Free, accurate, 2 minutes per city. Best option until volume justifies API setup.
+
+**Verdict:** For now, Victor records the screen segment live. It's faster to set up, more credible on camera, and creates a format competitors can't replicate with pure AI. If daily volume hits 5+ cities/day, wire up the Google Ads API to pull CPC automatically and inject it into the script template.
+
+---
+
 ## City Queue (fill in as you go)
 
 | Date | City | CPC | Anchor | Status |
