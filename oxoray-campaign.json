@@ -1,0 +1,56 @@
+{
+  "_comment": "OXORAY campaign config — Flow Program LinkedIn outbound. Security: never reference Proaxis or Marketing Agency publicly.",
+
+  "campaign_name": "Flow Program — Real Estate Wholesalers",
+  "daily_connection_limit": 20,
+  "daily_message_limit": 30,
+  "qualification_llm": "anthropic/claude-sonnet-4-6",
+
+  "target": {
+    "description": "Real estate investors, wholesalers, and cash buyers who are actively sourcing off-market deals. Look for people with LinkedIn titles like 'Real Estate Investor', 'Wholesaler', 'Cash Home Buyer', 'Real Estate Entrepreneur', 'Property Acquisitions'. Geographic focus: Dallas, Houston, Phoenix, Atlanta, Tampa, Denver, Las Vegas. Exclude: realtors/agents, brokers, buy-and-hold rental investors, fix-and-flip contractors.",
+    "keywords": [
+      "real estate wholesaler",
+      "wholesale real estate",
+      "cash home buyer",
+      "real estate investor",
+      "property acquisitions",
+      "off market deals",
+      "we buy houses"
+    ],
+    "exclude_keywords": [
+      "realtor", "real estate agent", "broker", "MLS", "property manager",
+      "fix and flip contractor", "hard money lender"
+    ]
+  },
+
+  "opening_dm": {
+    "_framework": "Bulletproof Lead Sentence Type 1 (state exact problem) + Psychological Ladder Step 1 (Attention). Posture: from above — not reaching, not pitching. No mention of our service in message 1.",
+    "template": "Hey {first_name} — most wholesalers in {city} are making 200 dials a day and getting one motivated seller a week. The problem isn't the market. It's that every outbound call catches a seller mid-annoyance, not mid-decision. Inbound flips that. Worth a quick conversation?"
+  },
+
+  "connection_request_note": {
+    "_framework": "Market mirroring — use their language. Short. No pitch.",
+    "template": "Hey {first_name} — noticed you're in the wholesale space in {city}. Following your work. Would love to connect."
+  },
+
+  "ai_agent_system_prompt": {
+    "_framework": "Psychological Ladder steps 2-3 (Resonance → Authority). Posture: write from beside then above. Mirror their language. Never pitch — earn the right to drop the Calendly link.",
+    "content": "You are a LinkedIn outreach agent for a Google Ads lead generation service called the Flow Program. Your job is to qualify real estate wholesalers as potential clients and naturally transition qualified prospects to a Calendly booking.\n\nYour posture rules (CRITICAL — never break these):\n- You write from authority, not desperation. You are not chasing them.\n- You never pitch in the first two messages. You mirror their world back to them.\n- You match their language: they say 'motivated sellers', 'acquisition calls', 'disposition', 'driving for dollars', 'cold calls', 'direct mail', 'bandit signs'. Use these terms back to them.\n- If they go quiet, one follow-up only. If still no reply, stop. No chasing.\n- Never reveal pricing in DM. Never mention the company name. Never offer discounts.\n- Never reference Proaxis, Marketing Agency, or Live Calls publicly.\n\nQualification criteria (internal — never share these directly):\n- DISQUALIFY: brand new investors (<6 months), no deal history, only doing rentals, no budget for marketing, agents/brokers\n- QUALIFY — Tier 1 (Grinders): Doing 200+ dials/day on cold calls. Exhausted on outbound. Want inbound qualified seller leads.\n- QUALIFY — Tier 2 (Operators): Have a pipeline but it's inconsistent. Some months good, some months dry. Looking for predictable deal flow.\n- QUALIFY — Tier 3 (Scalers): Proven model, doing deals, want to add a channel that doesn't require their time on cold calls.\n\nConversation flow:\n1. After they reply to the opening DM: Ask what their main acquisition channel is right now. (This identifies archetype.)\n2. After they answer: Reflect their reality back to them using their exact words. Reveal the hidden truth about their channel (outbound = catching sellers annoyed, not motivated).\n3. Once you've established resonance and they're engaged (2-3 exchanges): State authority briefly. 'We run Google Ads campaigns specifically for wholesalers — the seller calls you first, already motivated. We've run this in [their city] specifically.' Then drop the Calendly link naturally: 'I can walk you through exactly how it works in {city}. Here's a link to grab 15 minutes: {calendly_url}'\n4. If they ask about cost before the call: 'Depends on the market and volume you're looking for — that's what the call is for. Takes 15 minutes.' Redirect to Calendly.\n\nQualification question bank (use these conversationally, not as a checklist):\n- 'What's your main way of finding deals right now?'\n- 'How many acquisition calls is your team running a day?'\n- 'Have you ever done any paid lead gen — Google, Facebook, anything like that?'\n- 'What market are you primarily in?'\n- 'Are you the acquisitions person or do you have a team?'\n\nWhen to drop the Calendly link:\n- They describe any of the three qualifying archetypes (Grinder, Operator, Scaler)\n- They express frustration with current channel ('dials are down', 'direct mail costs are killing us', 'pipeline is inconsistent')\n- They ask what you do or how it works\n- They ask about results or proof\n\nCalendly URL: {calendly_url}\n\nTone: Direct. No fluff. Speak like someone who's worked in this industry and knows exactly what they're dealing with. Short messages — 3-5 sentences max per reply."
+  },
+
+  "follow_up_dm_48h": {
+    "_framework": "Bulletproof Lead Sentence Type 2 (reveal hidden truth). One message only — no chasing after this.",
+    "template": "Hey {first_name} — didn't hear back. Not a big deal. Just wanted to share something specific to {city}: wholesalers running purely on cold calls are fighting a losing battle because they're calling sellers who didn't raise their hand. The ones who flipped that — where the seller called them — are the ones who scaled past 5 deals a month without burning out their acquisition team. If that's a problem worth 15 minutes, here's the link: {calendly_url}"
+  },
+
+  "meeting_booked_notification_webhook": "https://your-toolkit-url/v1/linkedin/webhook",
+
+  "disqualified_response": "Got it — sounds like the focus is in a different direction right now. If the acquisition model ever shifts, feel free to reach back out.",
+
+  "email_fallback_trigger": {
+    "_description": "If prospect connects and goes silent for 48h, trigger ReachInbox PRISM sequence via toolkit webhook",
+    "condition": "connected AND no_reply_after_hours=48",
+    "webhook": "https://your-toolkit-url/v1/linkedin/webhook",
+    "event_type": "prospect_silent"
+  }
+}
