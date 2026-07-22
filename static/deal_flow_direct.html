@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Flow Direct — Operations</title>
+<style>
+/* ── Token System ─────────────────────────────────────────────────────── */
+:root {
+  --bg:          #0F1C47;
+  --surface:     #1B2A5E;
+  --surface-2:   #243A7A;
+  --surface-3:   #2E4690;
+  --border:      rgba(139,164,212,0.18);
+  --border-strong: rgba(139,164,212,0.35);
+  --text:        #E8EEFF;
+  --text-2:      #8BA4D4;
+  --text-3:      #5A7AB8;
+  --gold:        #F5B800;
+  --gold-dim:    #C99A00;
+  --gold-bg:     rgba(245,184,0,0.10);
+  --hot:         #22C55E;
+  --warm:        #F59E0B;
+  --cold:        #60A5FA;
+  --danger:      #EF4444;
+  --danger-bg:   rgba(239,68,68,0.12);
+  --radius:      8px;
+  --radius-lg:   14px;
+  --mono:        'SF Mono','Cascadia Code','Consolas',monospace;
+  --serif:       Georgia,'Times New Roman',serif;
+  --sans:        system-ui,-apple-system,'Segoe UI',sans-serif;
+  --shadow:      0 2px 16px rgba(0,0,0,0.35);
+}
+
+:root[data-theme="light"] {
+  --bg:          #EEF1F9;
+  --surface:     #FFFFFF;
+  --surface-2:   #F0F3FB;
+  --surface-3:   #E2E8F7;
+  --border:      rgba(27,42,94,0.12);
+  --border-strong: rgba(27,42,94,0.25);
+  --text:        #0F1C47;
+  --text-2:      #3A5494;
+  --text-3:      #7A96CC;
+  --gold:        #B88A00;
+  --gold-dim:    #957000;
+  --gold-bg:     rgba(184,138,0,0.08);
+  --shadow:      0 2px 16px rgba(27,42,94,0.10);
+}
+
+/* ── Reset & Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+a { color: var(--gold); text-decoration: none; }
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+.header {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.brand-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.brand-accent { color: var(--gold); }
+
+.brand-tag {
+  font-size: 11px;
+  color: var(--text-2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-phone {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid rgba(245,184,0,0.25);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  letter-spacing: 0.04em;
+}
+
+.btn-theme {
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  font-size: 12px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-theme:hover { color: var(--text); border-color: var(--text-2); }
+
+/* ── Sidebar ──────────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-section-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 600;
+  padding: 8px 20px 4px;
+  margin-top: 8px;
+}
+.sidebar-section-label:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  border-radius: 0;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 13.5px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  position: relative;
+}
+.nav-item:hover { color: var(--text); background: var(--surface-2); }
+.nav-item.active {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-icon { font-size: 15px; flex-shrink: 0; opacity: 0.8; }
+
+.sidebar-stats {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.sidebar-kpi:last-child { margin-bottom: 0; }
+.sidebar-kpi-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.sidebar-kpi-value {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* ── Main ─────────────────────────────────────────────────────────────── */
+.main {
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── KPI Row ──────────────────────────────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card.gold-accent::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+}
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.kpi-card.gold-accent .kpi-value { color: var(--gold); }
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* ── Section ──────────────────────────────────────────────────────────── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.section-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  font-size: 12.5px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.1s;
+}
+.btn:hover { opacity: 0.88; }
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--gold);
+  color: #0F1C47;
+  font-weight: 600;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--text-2); }
+
+.btn-danger {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11.5px;
+}
+
+/* ── Table ────────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+
+.mono { font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em; }
+
+.text-2 { color: var(--text-2); }
+.text-dim { color: var(--text-3); font-size: 12px; }
+
+/* ── Pills / Status ───────────────────────────────────────────────────── */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pill-hot   { background: rgba(34,197,94,0.15);  color: var(--hot);  border: 1px solid rgba(34,197,94,0.35); }
+.pill-warm  { background: rgba(245,158,11,0.15); color: var(--warm); border: 1px solid rgba(245,158,11,0.35); }
+.pill-cold  { background: rgba(96,165,250,0.12); color: var(--cold); border: 1px solid rgba(96,165,250,0.3); }
+.pill-unq   { background: var(--danger-bg);      color: var(--danger); border: 1px solid rgba(239,68,68,0.35); }
+.pill-gold  { background: var(--gold-bg);         color: var(--gold); border: 1px solid rgba(245,184,0,0.35); }
+.pill-grey  { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+
+.type-seller { color: var(--warm); font-size: 12px; font-weight: 500; }
+.type-buyer  { color: var(--cold); font-size: 12px; font-weight: 500; }
+
+/* ── Score bar ────────────────────────────────────────────────────────── */
+.score-cell { display: flex; align-items: center; gap: 8px; }
+.score-bar-track {
+  flex: 1; height: 4px; background: var(--surface-3);
+  border-radius: 2px; overflow: hidden; min-width: 60px;
+}
+.score-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: var(--gold);
+  transition: width 0.4s;
+}
+.score-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px; }
+.form-grid.cols-1 { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.span-2 { grid-column: span 2; }
+.form-group label { font-size: 11px; color: var(--text-2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 11px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--gold);
+}
+.form-group textarea { resize: vertical; min-height: 90px; }
+.form-group select option { background: var(--surface); }
+.form-actions {
+  padding: 0 20px 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-close {
+  background: none; border: none; color: var(--text-2);
+  font-size: 20px; cursor: pointer; line-height: 1;
+}
+.modal-body { overflow-y: auto; flex: 1; }
+
+/* ── Panel ────────────────────────────────────────────────────────────── */
+.panel { display: none; flex-direction: column; gap: 20px; }
+.panel.active { display: flex; }
+
+/* ── Ad card ──────────────────────────────────────────────────────────── */
+.ad-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.ad-headline {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.ad-body {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow: hidden;
+  position: relative;
+}
+.ad-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.ad-result-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.ad-result-box.visible { display: flex; }
+
+/* ── Checklist ────────────────────────────────────────────────────────── */
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.check-item {
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.check-icon { color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 200;
+  max-width: 300px;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.success { border-color: var(--hot); }
+#toast.error   { border-color: var(--danger); }
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* ── Sparkline container ──────────────────────────────────────────────── */
+.sparkline-section {
+  padding: 0 20px 20px;
+}
+.sparkline-label {
+  font-size: 10.5px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+  .sidebar { display: none; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Qualification result ─────────────────────────────────────────────── */
+.qual-result {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+.qual-result.visible { display: flex; }
+.qual-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.qual-key { color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; }
+.qual-val { font-weight: 500; color: var(--text); }
+.qual-notes { color: var(--text-2); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 8px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span class="brand-name">Deal Flow <span class="brand-accent">Direct</span></span>
+      <span class="brand-tag">San Diego</span>
+    </div>
+    <div class="header-right">
+      <span class="header-phone" id="header-phone">Loading...</span>
+      <button class="btn-theme" onclick="toggleTheme()">☀ / ☾</button>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <span class="sidebar-section-label">Operations</span>
+    <button class="nav-item active" onclick="showPanel('leads', this)">
+      <span class="nav-icon">📥</span> Leads
+    </button>
+    <button class="nav-item" onclick="showPanel('transfers', this)">
+      <span class="nav-icon">⚡</span> Transfers
+    </button>
+    <button class="nav-item" onclick="showPanel('buyers', this)">
+      <span class="nav-icon">👥</span> Buyers
+    </button>
+
+    <span class="sidebar-section-label">Marketing</span>
+    <button class="nav-item" onclick="showPanel('ads', this)">
+      <span class="nav-icon">📋</span> Craigslist Ads
+    </button>
+    <button class="nav-item" onclick="showPanel('youtube', this)">
+      <span class="nav-icon">▶</span> YouTube
+    </button>
+
+    <div class="sidebar-stats" id="sidebar-stats">
+      <div class="sidebar-kpi">
+        <span class="sidebar-kpi-label">Revenue (completed)</span>
+        <span class="sidebar-kpi-value" id="sb-revenue">—</span>
+      </div>
+      <div class="sidebar-kpi">
+        <span class="sidebar-kpi-label">Total Leads</span>
+        <span class="sidebar-kpi-value" id="sb-leads" style="font-size:18px;color:var(--text)">—</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card gold-accent">
+        <span class="kpi-label">Completed Revenue</span>
+        <span class="kpi-value" id="kpi-revenue">—</span>
+        <span class="kpi-sub" id="kpi-pending">pending: —</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total Leads</span>
+        <span class="kpi-value" id="kpi-leads">—</span>
+        <span class="kpi-sub" id="kpi-lead-sub">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Transfers</span>
+        <span class="kpi-value" id="kpi-transfers">—</span>
+        <span class="kpi-sub" id="kpi-transfer-sub">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Active Ads</span>
+        <span class="kpi-value" id="kpi-ads">—</span>
+        <span class="kpi-sub">Craigslist + YouTube</span>
+      </div>
+    </div>
+
+    <!-- ── Leads Panel ─────────────────────────────────────────────────── -->
+    <div class="panel active" id="panel-leads">
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Recent Leads</span>
+          <div class="section-actions">
+            <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Refresh</button>
+            <button class="btn btn-primary btn-sm" onclick="openIntakeModal()">+ New Lead</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="leads-table">
+            <thead>
+              <tr>
+                <th>Caller</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Type</th>
+                <th>Motivation</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody">
+              <tr><td colspan="10" class="empty">Loading leads...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Transfers Panel ────────────────────────────────────────────── -->
+    <div class="panel" id="panel-transfers">
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Transfer Log</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="transfers-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Lead</th>
+                <th>Address</th>
+                <th>Type</th>
+                <th>Buyer</th>
+                <th>Fee</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="transfers-tbody">
+              <tr><td colspan="10" class="empty">Loading transfers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Weekly Revenue (completed transfers)</span>
+        </div>
+        <div class="sparkline-section">
+          <canvas id="revenue-chart" height="80" style="width:100%;display:block;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Buyers Panel ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-buyers">
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Registered Buyers</span>
+          <button class="btn btn-primary btn-sm" onclick="openBuyerModal()">+ Add Buyer</button>
+        </div>
+        <div class="table-wrap">
+          <table id="buyers-table">
+            <thead>
+              <tr>
+                <th>Name / Company</th>
+                <th>Phone</th>
+                <th>Type</th>
+                <th>Fee</th>
+                <th>Fee Type</th>
+                <th>Service Areas</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="buyers-tbody">
+              <tr><td colspan="8" class="empty">Loading buyers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ads Panel ──────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-ads">
+      <!-- Generator -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Generate Craigslist Ad (Greenlight Formula)</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Ad Type</label>
+            <select id="ad-type">
+              <option value="motivated_seller">Motivated Seller (We Buy Houses)</option>
+              <option value="buyer">Buyer / Investor Wanted</option>
+              <option value="investor">Investor Opportunity (Off-Market)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tracking Phone</label>
+            <input type="text" id="ad-phone" placeholder="(619) 555-0100">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="ad-location" value="San Diego, CA">
+          </div>
+          <div class="form-group">
+            <label>Custom Notes (optional)</label>
+            <input type="text" id="ad-notes" placeholder="e.g. focus on North County, estate sales">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="generateAd()">
+            <span>Generate Ad</span>
+          </button>
+        </div>
+
+        <div class="ad-result-box" id="ad-result" style="margin:0 20px 20px;">
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Headline</div>
+            <div class="ad-headline" id="ad-result-headline"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Image to use</div>
+            <div style="font-size:12.5px;color:var(--text-2);" id="ad-result-image"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Body</div>
+            <div class="ad-body" id="ad-result-body"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Call to Action</div>
+            <div style="font-size:13px;font-weight:600;color:var(--gold);" id="ad-result-cta"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:6px;">Renewal Tip (48 hrs)</div>
+            <div style="font-size:12.5px;color:var(--text-2);font-style:italic;" id="ad-result-renewal"></div>
+          </div>
+          <div class="form-actions" style="padding:0;">
+            <button class="btn btn-ghost btn-sm" onclick="copyAdToClipboard()">Copy Ad</button>
+            <button class="btn btn-primary btn-sm" onclick="saveAndActivateAd()">Save & Mark Active</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Ads -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Active Ads</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Headline</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Posted</th>
+                <th>Expires</th>
+                <th>Renewals</th>
+                <th>Leads</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ads-tbody">
+              <tr><td colspan="8" class="empty">No ads yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── YouTube Panel ──────────────────────────────────────────────── -->
+    <div class="panel" id="panel-youtube">
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Zillow → YouTube Video Pipeline</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Zillow Property URL</label>
+            <input type="url" id="yt-zillow-url" placeholder="https://www.zillow.com/homedetails/...">
+          </div>
+          <div class="form-group">
+            <label>Tracking Phone</label>
+            <input type="text" id="yt-phone" placeholder="(619) 555-0100">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="prepareYouTubeVideo()">Prepare Video + Script</button>
+        </div>
+
+        <div class="ad-result-box" id="yt-result" style="margin:0 20px 20px;">
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">YouTube Title</div>
+            <div class="ad-headline" id="yt-title"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Video Script (narration)</div>
+            <div class="ad-body" id="yt-script" style="max-height:none;font-size:13px;color:var(--text);"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">YouTube Description</div>
+            <div class="ad-body" id="yt-desc" style="max-height:140px;"></div>
+          </div>
+          <div>
+            <div class="kpi-label" style="margin-bottom:4px;">Make.com / InVideo Config</div>
+            <pre id="yt-config" style="font-family:var(--mono);font-size:11px;color:var(--text-2);overflow-x:auto;padding:12px;background:var(--surface-3);border-radius:var(--radius);"></pre>
+          </div>
+          <div class="form-actions" style="padding:0;">
+            <button class="btn btn-ghost btn-sm" onclick="copyYtScript()">Copy Script</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Log -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Video Log</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>YouTube</th>
+                <th>Leads</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="yt-tbody">
+              <tr><td colspan="6" class="empty">No videos yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Lead Intake Modal ───────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="intake-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Lead — Call Notes</span>
+      <button class="modal-close" onclick="closeModal('intake-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Caller Name</label>
+          <input type="text" id="in-name" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label>Caller Phone *</label>
+          <input type="tel" id="in-phone" placeholder="(619) 555-0123">
+        </div>
+        <div class="form-group span-2">
+          <label>Property Address</label>
+          <input type="text" id="in-address" placeholder="123 Main St, San Diego, CA 92101">
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <select id="in-source">
+            <option value="craigslist">Craigslist</option>
+            <option value="youtube">YouTube</option>
+            <option value="facebook">Facebook</option>
+            <option value="referral">Referral</option>
+            <option value="manual">Manual / Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Initial Type (guess)</label>
+          <select id="in-type">
+            <option value="">Let AI decide</option>
+            <option value="motivated_seller">Motivated Seller</option>
+            <option value="buyer">Buyer / Investor</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Call Transcript / Notes (paste or type)</label>
+          <textarea id="in-transcript" placeholder="Paste the conversation or type key notes. AI will qualify based on this.&#10;&#10;Example: 'John called, inherited a house from his father in Chula Vista. Needs to sell in 3 weeks due to family situation. Property needs new roof, AC is out. Asking around $380k but open to cash offer. Doesn't want to deal with showings.'"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('intake-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitIntake()">Submit + Qualify</button>
+    </div>
+    <div class="qual-result" id="intake-qual-result" style="margin:0 20px 20px;">
+      <div class="qual-row">
+        <span class="qual-key">Lead Type</span>
+        <span class="qual-val" id="iq-type">—</span>
+      </div>
+      <div class="qual-row">
+        <span class="qual-key">Motivation</span>
+        <span class="qual-val" id="iq-motivation">—</span>
+      </div>
+      <div class="qual-row">
+        <span class="qual-key">Score</span>
+        <span class="qual-val" id="iq-score">—</span>
+      </div>
+      <div class="qual-row">
+        <span class="qual-key">Recommendation</span>
+        <span class="qual-val" id="iq-rec">—</span>
+      </div>
+      <div class="qual-notes" id="iq-notes">—</div>
+      <div class="form-actions" style="padding:0;margin-top:4px;">
+        <button class="btn btn-primary btn-sm" id="iq-transfer-btn" onclick="quickTransfer()" style="display:none;">⚡ Execute Transfer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Buyer Modal ─────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="buyer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Buyer / Wholesaler</span>
+      <button class="modal-close" onclick="closeModal('buyer-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" id="by-name" placeholder="Mike Johnson">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="by-company" placeholder="SD Wholesale Properties">
+        </div>
+        <div class="form-group">
+          <label>Phone *</label>
+          <input type="tel" id="by-phone" placeholder="(619) 555-0199">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="by-email" placeholder="mike@example.com">
+        </div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select id="by-type">
+            <option value="wholesaler">Wholesaler</option>
+            <option value="listing_agent">Listing Agent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fee Amount ($)</label>
+          <input type="number" id="by-fee" placeholder="200" min="0">
+        </div>
+        <div class="form-group">
+          <label>Fee Type</label>
+          <select id="by-fee-type">
+            <option value="per_transfer">Per Transfer</option>
+            <option value="monthly">Monthly Retainer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Service Areas</label>
+          <input type="text" id="by-areas" placeholder="San Diego, Chula Vista, El Cajon">
+        </div>
+        <div class="form-group span-2">
+          <label>Buy Criteria</label>
+          <textarea id="by-criteria" placeholder="E.g. SFR, 3br+, ARV $400k+, buys in any condition, prefers south SD county" style="min-height:60px;"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('buyer-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitBuyer()">Save Buyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer Modal -->
+<div class="modal-backdrop" id="transfer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Execute Live Transfer</span>
+      <button class="modal-close" onclick="closeModal('transfer-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Select Buyer</label>
+          <select id="tr-buyer"></select>
+        </div>
+        <div class="form-group">
+          <label>Method</label>
+          <select id="tr-method">
+            <option value="phone">Phone (Live Transfer)</option>
+            <option value="sms">SMS Introduction</option>
+            <option value="email">Email Introduction</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Notes</label>
+          <textarea id="tr-notes" style="min-height:60px;" placeholder="Transfer notes for your records..."></textarea>
+        </div>
+      </div>
+      <div id="tr-script-box" style="display:none;padding:0 20px 16px;">
+        <div class="kpi-label" style="margin-bottom:6px;">Transfer Script</div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:13px;color:var(--text);line-height:1.5;" id="tr-script"></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('transfer-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="executeTransfer()">⚡ Transfer Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ── State ──────────────────────────────────────────────────────────────── */
+const state = {
+  apiKey: localStorage.getItem('dfd_api_key') || '',
+  data: null,
+  currentLeadId: null,
+  pendingAdId: null,
+  pendingAdData: null,
+};
+
+/* ── Boot ─────────────────────────────────────────────────────────────── */
+(async () => {
+  // Restore theme
+  const t = localStorage.getItem('dfd_theme');
+  if (t) document.documentElement.dataset.theme = t;
+
+  // Prompt for API key if blank
+  if (!state.apiKey) {
+    const k = prompt('Enter your API key (set as API_KEY env var on the server, or leave blank if not configured):');
+    if (k !== null) { state.apiKey = k; localStorage.setItem('dfd_api_key', k); }
+  }
+
+  await loadData();
+  prefillPhoneFields();
+})();
+
+/* ── Utilities ────────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const headers = () => ({
+  'Content-Type': 'application/json',
+  ...(state.apiKey ? { 'X-API-Key': state.apiKey } : {}),
+});
+
+function toast(msg, type = 'success') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 3000);
+}
+
+function fmt$$(n) {
+  if (n === null || n === undefined || n === '—') return '—';
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtDate(s) {
+  if (!s) return '—';
+  return new Date(s + (s.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function motivPill(m) {
+  const map = { hot:'pill-hot', warm:'pill-warm', cold:'pill-cold', unqualified:'pill-unq' };
+  return `<span class="pill ${map[m]||'pill-grey'}">${m||'—'}</span>`;
+}
+
+function statusPill(s) {
+  const map = {
+    new:'pill-grey', qualified:'pill-warm', transferred:'pill-hot',
+    rejected:'pill-unq', no_answer:'pill-grey',
+    pending:'pill-warm', completed:'pill-hot', failed:'pill-unq', refunded:'pill-grey',
+    active:'pill-hot', draft:'pill-grey', expired:'pill-unq', paused:'pill-grey',
+    published:'pill-hot', processing:'pill-warm',
+  };
+  return `<span class="pill ${map[s]||'pill-grey'}">${s||'—'}</span>`;
+}
+
+function scoreBar(score) {
+  const pct = Math.min(100, Math.max(0, score||0));
+  const col = pct >= 70 ? 'var(--hot)' : pct >= 40 ? 'var(--warm)' : 'var(--text-3)';
+  return `<div class="score-cell">
+    <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${col};"></div></div>
+    <span class="score-num">${pct}</span>
+  </div>`;
+}
+
+/* ── Theme ────────────────────────────────────────────────────────────── */
+function toggleTheme() {
+  const cur = document.documentElement.dataset.theme;
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('dfd_theme', next);
+}
+
+/* ── Panel nav ────────────────────────────────────────────────────────── */
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  $(`panel-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ── Load data ────────────────────────────────────────────────────────── */
+async function loadData() {
+  try {
+    const r = await fetch('/dfd/data', { headers: headers() });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    state.data = d;
+    renderAll(d);
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+}
+
+function renderAll(d) {
+  const s = d.summary;
+
+  // Header phone
+  $('header-phone').textContent = d.tracking_phone;
+  prefillPhoneFields(d.tracking_phone);
+
+  // KPI
+  $('kpi-revenue').textContent = fmt$$(s.total_revenue);
+  $('kpi-pending').textContent = `pending: ${fmt$$(s.pending_revenue)}`;
+  $('kpi-leads').textContent = s.total_leads;
+  $('kpi-lead-sub').textContent = `${s.motivated_sellers} sellers · ${s.buyers} buyers`;
+  $('kpi-transfers').textContent = s.completed_transfers;
+  $('kpi-transfer-sub').textContent = `${s.total_transfers} total · ${s.transferred_leads} leads sent`;
+  $('kpi-ads').textContent = d.active_ads.length + (d.youtube_videos.filter(v=>v.status==='published').length > 0 ? ` + ${d.youtube_videos.filter(v=>v.status==='published').length}` : '');
+
+  // Sidebar
+  $('sb-revenue').textContent = fmt$$(s.total_revenue);
+  $('sb-leads').textContent = s.total_leads;
+
+  renderLeads(d.recent_leads);
+  renderTransfers(d.recent_transfers);
+  renderBuyers(d.buyers);
+  renderAds(d.active_ads);
+  renderYt(d.youtube_videos);
+  renderRevenueChart(d.weekly_revenue);
+}
+
+/* ── Leads Table ──────────────────────────────────────────────────────── */
+function renderLeads(leads) {
+  if (!leads || !leads.length) {
+    $('leads-tbody').innerHTML = `<tr><td colspan="10" class="empty">No leads yet. Click "New Lead" to add one.</td></tr>`;
+    return;
+  }
+  $('leads-tbody').innerHTML = leads.map(l => `
+    <tr>
+      <td>${l.caller_name || '<span class="text-dim">Unknown</span>'}</td>
+      <td class="mono">${l.caller_phone}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.address || '<span class="text-dim">—</span>'}</td>
+      <td><span class="${l.lead_type === 'motivated_seller' ? 'type-seller' : 'type-buyer'}">${l.lead_type === 'motivated_seller' ? 'Seller' : l.lead_type === 'buyer' ? 'Buyer' : '?'}</span></td>
+      <td>${motivPill(l.motivation_level)}</td>
+      <td>${scoreBar(l.qualification_score)}</td>
+      <td>${statusPill(l.status)}</td>
+      <td class="text-dim">${l.source||'—'}</td>
+      <td class="text-dim" style="white-space:nowrap;">${fmtDate(l.created_at)}</td>
+      <td>
+        ${l.status === 'qualified' ? `<button class="btn btn-primary btn-sm" onclick="openTransferModal(${l.id})">Transfer</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Transfers Table ──────────────────────────────────────────────────── */
+function renderTransfers(transfers) {
+  if (!transfers || !transfers.length) {
+    $('transfers-tbody').innerHTML = `<tr><td colspan="10" class="empty">No transfers yet.</td></tr>`;
+    return;
+  }
+  $('transfers-tbody').innerHTML = transfers.map(t => `
+    <tr>
+      <td class="mono text-dim">#${t.id}</td>
+      <td>${t.caller_name || t.caller_phone}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.address||'—'}</td>
+      <td><span class="${t.lead_type === 'motivated_seller' ? 'type-seller' : 'type-buyer'}">${t.lead_type === 'motivated_seller' ? 'Seller' : 'Buyer'}</span></td>
+      <td>${t.buyer_name||'—'}</td>
+      <td style="color:var(--gold);font-family:var(--serif);font-size:15px;font-weight:600;">${fmt$$(t.fee_amount)}</td>
+      <td class="text-dim">${t.transfer_method}</td>
+      <td>${statusPill(t.status)}</td>
+      <td class="text-dim" style="white-space:nowrap;">${fmtDate(t.transferred_at)}</td>
+      <td>
+        ${t.status === 'pending' ? `<button class="btn btn-ghost btn-sm" onclick="markComplete(${t.id})">✓ Done</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Buyers Table ─────────────────────────────────────────────────────── */
+function renderBuyers(buyers) {
+  if (!buyers || !buyers.length) {
+    $('buyers-tbody').innerHTML = `<tr><td colspan="8" class="empty">No buyers registered. Add your first wholesaler or listing agent.</td></tr>`;
+    return;
+  }
+  $('buyers-tbody').innerHTML = buyers.map(b => `
+    <tr>
+      <td>
+        <div style="font-weight:500;">${b.name}</div>
+        ${b.company ? `<div class="text-dim">${b.company}</div>` : ''}
+      </td>
+      <td class="mono">${b.phone}</td>
+      <td><span class="pill ${b.type === 'wholesaler' ? 'pill-warm' : 'pill-cold'}">${b.type === 'wholesaler' ? 'Wholesaler' : 'Listing Agent'}</span></td>
+      <td style="color:var(--gold);font-family:var(--serif);font-size:15px;font-weight:600;">${fmt$$(b.fee_amount)}</td>
+      <td class="text-dim">${b.fee_type === 'per_transfer' ? 'Per Transfer' : 'Monthly'}</td>
+      <td class="text-dim" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.service_areas||'—'}</td>
+      <td>${b.active ? '<span class="pill pill-hot">Active</span>' : '<span class="pill pill-grey">Inactive</span>'}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deactivateBuyer(${b.id})" title="Deactivate">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Ads Table ────────────────────────────────────────────────────────── */
+function renderAds(ads) {
+  if (!ads || !ads.length) {
+    $('ads-tbody').innerHTML = `<tr><td colspan="8" class="empty">No active ads. Generate one above.</td></tr>`;
+    return;
+  }
+  $('ads-tbody').innerHTML = ads.map(a => `
+    <tr>
+      <td style="max-width:220px;">
+        <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.headline}</div>
+      </td>
+      <td><span class="pill ${a.ad_type==='motivated_seller'?'pill-warm':'pill-cold'}">${a.ad_type.replace('_',' ')}</span></td>
+      <td>${statusPill(a.status)}</td>
+      <td class="text-dim" style="white-space:nowrap;">${a.posted_at ? fmtDate(a.posted_at) : '—'}</td>
+      <td class="text-dim" style="white-space:nowrap;">${a.expires_at ? fmtDate(a.expires_at) : '—'}</td>
+      <td class="mono text-dim">${a.renewal_count}</td>
+      <td style="font-variant-numeric:tabular-nums;">${a.leads_count}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="renewAd(${a.id})">Renew</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── YouTube Table ────────────────────────────────────────────────────── */
+function renderYt(videos) {
+  if (!videos || !videos.length) {
+    $('yt-tbody').innerHTML = `<tr><td colspan="6" class="empty">No videos yet. Paste a Zillow URL above.</td></tr>`;
+    return;
+  }
+  $('yt-tbody').innerHTML = videos.map(v => `
+    <tr>
+      <td class="text-dim" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.property_address||'—'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.title||'—'}</td>
+      <td>${statusPill(v.status)}</td>
+      <td>${v.youtube_url ? `<a href="${v.youtube_url}" target="_blank" style="font-size:12px;">▶ Watch</a>` : '<span class="text-dim">—</span>'}</td>
+      <td style="font-variant-numeric:tabular-nums;">${v.leads_generated||0}</td>
+      <td class="text-dim" style="white-space:nowrap;">${fmtDate(v.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+/* ── Revenue Chart ────────────────────────────────────────────────────── */
+function renderRevenueChart(weekly) {
+  const canvas = $('revenue-chart');
+  if (!canvas || !weekly || !weekly.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 80 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 80;
+
+  const values = weekly.map(w => w.revenue || 0);
+  const maxVal = Math.max(...values, 1);
+  const n = values.length;
+  const padL = 8, padR = 8, padT = 8, padB = 24;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  const pts = values.map((v, i) => ({
+    x: padL + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW),
+    y: padT + chartH - (v / maxVal) * chartH,
+  }));
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, H - padB);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length - 1].x, H - padB);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+  grad.addColorStop(0, 'rgba(245,184,0,0.25)');
+  grad.addColorStop(1, 'rgba(245,184,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = 'rgba(245,184,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Last point dot
+  if (pts.length) {
+    const last = pts[pts.length - 1];
+    ctx.beginPath();
+    ctx.arc(last.x, last.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#F5B800';
+    ctx.fill();
+  }
+
+  // Week labels
+  ctx.fillStyle = 'rgba(139,164,212,0.7)';
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center';
+  weekly.forEach((w, i) => {
+    const x = padL + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
+    ctx.fillText(w.week?.slice(-3) || '', x, H - 6);
+  });
+}
+
+/* ── Lead Intake ──────────────────────────────────────────────────────── */
+function openIntakeModal() {
+  ['in-name','in-phone','in-address','in-transcript'].forEach(id => $(id).value = '');
+  $('intake-qual-result').classList.remove('visible');
+  $('intake-modal').classList.add('open');
+  state.currentLeadId = null;
+}
+
+function closeModal(id) { $(id).classList.remove('open'); }
+
+async function submitIntake() {
+  const phone = $('in-phone').value.trim();
+  if (!phone) { toast('Caller phone is required', 'error'); return; }
+
+  const body = {
+    caller_name: $('in-name').value.trim() || undefined,
+    caller_phone: phone,
+    address: $('in-address').value.trim() || undefined,
+    source: $('in-source').value,
+    transcript: $('in-transcript').value.trim(),
+  };
+
+  try {
+    const r = await fetch('/v1/real_estate/lead/intake', {
+      method: 'POST', headers: headers(), body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Error submitting lead', 'error'); return; }
+
+    state.currentLeadId = d.lead_id;
+    const q = d.qualification;
+
+    $('iq-type').textContent = q.lead_type || '—';
+    $('iq-motivation').innerHTML = motivPill(q.motivation_level);
+    $('iq-score').textContent = `${q.score}/100`;
+    $('iq-rec').textContent = q.transfer_recommendation ? '✓ Ready to transfer' : 'Follow up needed';
+    $('iq-rec').style.color = q.transfer_recommendation ? 'var(--hot)' : 'var(--warm)';
+    $('iq-notes').textContent = q.notes || '—';
+    $('iq-transfer-btn').style.display = q.transfer_recommendation ? '' : 'none';
+    $('intake-qual-result').classList.add('visible');
+
+    toast(`Lead #${d.lead_id} qualified — score ${q.score}/100`);
+    loadData();
+  } catch(e) {
+    toast('Network error', 'error');
+  }
+}
+
+async function quickTransfer() {
+  closeModal('intake-modal');
+  await openTransferModal(state.currentLeadId);
+}
+
+/* ── Transfer Modal ───────────────────────────────────────────────────── */
+async function openTransferModal(leadId) {
+  state.currentLeadId = leadId;
+  $('tr-notes').value = '';
+  $('tr-script-box').style.display = 'none';
+
+  // Populate buyer select
+  const buyers = state.data?.buyers || [];
+  const sel = $('tr-buyer');
+  sel.innerHTML = buyers.length
+    ? buyers.map(b => `<option value="${b.id}">${b.name} (${b.type}) — ${fmt$$(b.fee_amount)}</option>`).join('')
+    : '<option value="">No active buyers</option>';
+
+  $('transfer-modal').classList.add('open');
+}
+
+async function executeTransfer() {
+  const buyerId = $('tr-buyer').value;
+  if (!buyerId) { toast('No buyer selected', 'error'); return; }
+
+  try {
+    const r = await fetch('/v1/real_estate/lead/transfer', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({
+        lead_id: state.currentLeadId,
+        buyer_id: parseInt(buyerId),
+        method: $('tr-method').value,
+        notes: $('tr-notes').value.trim(),
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Transfer failed', 'error'); return; }
+
+    $('tr-script').textContent = d.transfer_script;
+    $('tr-script-box').style.display = 'block';
+    toast(`Transfer #${d.transfer_id} created — ${fmt$$(d.fee_amount)} fee`, 'success');
+    loadData();
+  } catch(e) {
+    toast('Network error', 'error');
+  }
+}
+
+async function markComplete(transferId) {
+  await fetch(`/v1/real_estate/transfer/${transferId}/complete`, { method:'POST', headers:headers() });
+  toast('Transfer marked complete', 'success');
+  loadData();
+}
+
+/* ── Buyer CRUD ───────────────────────────────────────────────────────── */
+function openBuyerModal() {
+  ['by-name','by-company','by-phone','by-email','by-fee','by-areas','by-criteria'].forEach(id => $(id).value = '');
+  $('buyer-modal').classList.add('open');
+}
+
+async function submitBuyer() {
+  const name = $('by-name').value.trim();
+  const phone = $('by-phone').value.trim();
+  if (!name || !phone) { toast('Name and phone are required', 'error'); return; }
+
+  try {
+    const r = await fetch('/v1/real_estate/buyers', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({
+        name, phone,
+        company: $('by-company').value.trim() || undefined,
+        email: $('by-email').value.trim() || undefined,
+        type: $('by-type').value,
+        fee_amount: parseFloat($('by-fee').value) || 0,
+        fee_type: $('by-fee-type').value,
+        service_areas: $('by-areas').value.trim() || undefined,
+        buy_criteria: $('by-criteria').value.trim() || undefined,
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Error saving buyer', 'error'); return; }
+    closeModal('buyer-modal');
+    toast(`Buyer "${name}" added`, 'success');
+    loadData();
+  } catch(e) {
+    toast('Network error', 'error');
+  }
+}
+
+async function deactivateBuyer(id) {
+  if (!confirm('Deactivate this buyer?')) return;
+  await fetch(`/v1/real_estate/buyers/${id}`, { method:'DELETE', headers:headers() });
+  toast('Buyer deactivated', 'success');
+  loadData();
+}
+
+/* ── Craigslist Ad Generator ──────────────────────────────────────────── */
+async function generateAd() {
+  const phone = $('ad-phone').value.trim();
+  if (!phone) { toast('Tracking phone is required', 'error'); return; }
+
+  toast('Generating ad with AI...', 'success');
+  try {
+    const r = await fetch('/v1/real_estate/craigslist/generate', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({
+        ad_type: $('ad-type').value,
+        tracking_phone: phone,
+        location: $('ad-location').value.trim() || 'San Diego, CA',
+        custom_notes: $('ad-notes').value.trim(),
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Error generating ad', 'error'); return; }
+
+    state.pendingAdId = d.ad_id;
+    state.pendingAdData = d;
+
+    $('ad-result-headline').textContent = d.headline || '';
+    $('ad-result-image').textContent = d.image_description || '';
+    $('ad-result-body').textContent = d.body || '';
+    $('ad-result-cta').textContent = d.cta || '';
+    $('ad-result-renewal').textContent = d.renewal_tip || '';
+    $('ad-result').classList.add('visible');
+    toast('Ad generated!', 'success');
+  } catch(e) {
+    toast('Network error', 'error');
+  }
+}
+
+async function saveAndActivateAd() {
+  if (!state.pendingAdId) return;
+  const r = await fetch(`/v1/real_estate/craigslist/ads/${state.pendingAdId}/activate`, {
+    method: 'POST', headers: headers(),
+  });
+  const d = await r.json();
+  toast(`Ad activated — expires ${fmtDate(d.expires_at)}`, 'success');
+  loadData();
+}
+
+function copyAdToClipboard() {
+  const text = [
+    $('ad-result-headline').textContent,
+    '',
+    $('ad-result-body').textContent,
+    '',
+    $('ad-result-cta').textContent,
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard!', 'success'));
+}
+
+async function renewAd(id) {
+  const r = await fetch(`/v1/real_estate/craigslist/ads/${id}/renew`, {
+    method: 'POST', headers: headers(),
+  });
+  const d = await r.json();
+  toast(`Ad renewed (${d.renewal_count}x) — expires ${fmtDate(d.expires_at)}`, 'success');
+  loadData();
+}
+
+/* ── YouTube Pipeline ─────────────────────────────────────────────────── */
+async function prepareYouTubeVideo() {
+  const url = $('yt-zillow-url').value.trim();
+  const phone = $('yt-phone').value.trim();
+  if (!url || !phone) { toast('Zillow URL and tracking phone are required', 'error'); return; }
+
+  toast('Scraping property + generating script...', 'success');
+  try {
+    const r = await fetch('/v1/real_estate/youtube/prepare', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ zillow_url: url, tracking_phone: phone }),
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Error preparing video', 'error'); return; }
+
+    $('yt-title').textContent = d.script?.title || '';
+    $('yt-script').textContent = d.script?.script || '';
+    $('yt-desc').textContent = d.script?.description || '';
+    $('yt-config').textContent = JSON.stringify(d.automation?.invideo_config || {}, null, 2);
+    $('yt-result').classList.add('visible');
+    toast('Script ready!', 'success');
+    loadData();
+  } catch(e) {
+    toast('Network error', 'error');
+  }
+}
+
+function copyYtScript() {
+  navigator.clipboard.writeText($('yt-script').textContent).then(() => toast('Script copied!', 'success'));
+}
+
+/* ── Phone prefill ────────────────────────────────────────────────────── */
+function prefillPhoneFields(phone) {
+  phone = phone || state.data?.tracking_phone || '';
+  if (!phone || phone === 'Not configured') return;
+  if (!$('ad-phone').value) $('ad-phone').value = phone;
+  if (!$('yt-phone').value) $('yt-phone').value = phone;
+}
+
+/* ── Keyboard shortcuts ───────────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>
