@@ -1188,7 +1188,7 @@ function renderPanelActions(id) {
   if (isLive) {
     actions.innerHTML = `
       <button class="btn btn-secondary" style="flex:1" onclick="setStatus('${id}','pending')">Revert to Pending</button>
-      <button class="btn btn-send" onclick="sendPost('${id}')">Send to Slack</button>
+      <button class="btn btn-send" onclick="sendPost('${id}')">📋 Copy for Slack</button>
     `;
   } else if (s === 'denied') {
     actions.innerHTML = `
@@ -1199,7 +1199,7 @@ function renderPanelActions(id) {
     actions.innerHTML = `
       <button class="btn btn-deny" onclick="setStatus('${id}','denied')">Deny</button>
       <button class="btn btn-approve" onclick="setStatus('${id}','approved')">Approve</button>
-      <button class="btn btn-send" onclick="sendPost('${id}')">Send to Slack ›</button>
+      <button class="btn btn-send" onclick="sendPost('${id}')">📋 Copy for Slack ›</button>
     `;
   }
 }
@@ -1258,8 +1258,12 @@ function showSlackModal(text) {
   box.style.cssText = 'background:var(--surface);border-radius:12px;padding:20px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);';
 
   const title = document.createElement('div');
-  title.textContent = 'Copy to #rmp-social';
-  title.style.cssText = 'font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-1);';
+  title.textContent = '📋 Copy for #rmp-social';
+  title.style.cssText = 'font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text-1);';
+
+  const hint = document.createElement('div');
+  hint.textContent = 'Paste into Slack, or tell Claude: "Send this post to Slack."';
+  hint.style.cssText = 'font-size:11px;color:var(--text-3);margin-bottom:12px;';
 
   const ta = document.createElement('textarea');
   ta.value = text;
@@ -1282,7 +1286,7 @@ function showSlackModal(text) {
   closeBtn.onclick = () => overlay.remove();
 
   btns.append(copyBtn, closeBtn);
-  box.append(title, ta, btns);
+  box.append(title, hint, ta, btns);
   overlay.appendChild(box);
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
@@ -1303,19 +1307,7 @@ function sendPost(id) {
     post.content
   ].filter(v => v !== null).join('\n');
 
-  const sendBtn = document.querySelector('#panel-actions .btn-send');
-  if (sendBtn) { sendBtn.textContent = 'Sending…'; sendBtn.disabled = true; }
-
-  if (typeof sendPrompt === 'function') {
-    sendPrompt(`Post this to Slack channel #rmp-social (channel ID C0BJBUF0PU3):\n\n${slackText}`);
-    setTimeout(() => {
-      toast('Sent to Slack ✓');
-      if (sendBtn) { sendBtn.textContent = 'Sent ✓'; setTimeout(() => { if (sendBtn) { sendBtn.textContent = 'Send to Slack'; sendBtn.disabled = false; } }, 2500); }
-    }, 400);
-  } else {
-    if (sendBtn) { sendBtn.textContent = 'Send to Slack'; sendBtn.disabled = false; }
-    showSlackModal(slackText);
-  }
+  showSlackModal(slackText);
 }
 
 function closePanel() {
