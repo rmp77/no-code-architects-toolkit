@@ -844,8 +844,13 @@ html, body {
       <input type="file" id="media-file-input" accept="image/*,video/*" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
     </div>
     <div>
-      <div class="panel-section-label">Review note</div>
+      <div class="panel-section-label" id="note-label">Review note</div>
       <textarea class="panel-note-field" id="panel-note" placeholder="Add feedback or edit instructions…"></textarea>
+      <div id="revision-box" hidden style="margin-top:8px;">
+        <button onclick="copyRevisionRequest()" style="width:100%;padding:9px;background:var(--denied-bg);color:var(--denied);border:1px solid var(--denied);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.02em;" id="revision-copy-btn">
+          📋 Copy revision request for Claude
+        </button>
+      </div>
     </div>
   </div>
   <div class="panel-actions" id="panel-actions"></div>
@@ -917,7 +922,7 @@ const RAW_POSTS = [
     id: 'p3', dayOffset: 3, pmps: 'pain', initialStatus: 'pending',
     platforms: ALL_PLATFORMS,
     media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_121942_7942e377-7db9-47b2-a5bc-c12f3cbcf80d.png', type: 'image/png' },
-    content: `Every week you wait is another week someone else closes the deal you should have had.\n\nWe've trained dozens of wholesalers who said they "weren't ready."\n\nThey were. You probably are too.\n\nDM CALLS.\n\n#RealEstate #Wholesaling`,
+    content: `Every week you wait is another week someone else closes the deal you should have had.\n\nDozens of wholesalers who said they "weren't ready" went on to close deals within weeks of saying yes.\n\nYou probably are too.\n\nDM CALLS.\n\n#RealEstate #Wholesaling`,
     time: '9:00 AM'
   },
   {
@@ -1204,12 +1209,26 @@ function setStatus(id, status) {
   STATE[id].status = status;
   STATE[id].note = document.getElementById('panel-note').value;
   renderCalendar();
-  // Update panel in-place
   const sb = document.getElementById('panel-status-badge');
   sb.textContent = statusLabel(status);
   sb.className = `panel-status-badge ${statusClass(status)}`;
   renderPanelActions(id);
-  toast(status === 'approved' ? 'Post approved' : status === 'denied' ? 'Post denied' : 'Status updated');
+  const isDenied = status === 'denied';
+  document.getElementById('note-label').textContent = isDenied ? 'What needs to change?' : 'Review note';
+  document.getElementById('panel-note').placeholder = isDenied ? 'Describe the fix (e.g. "Remove the training claim — we don\'t do training")' : 'Add feedback or edit instructions…';
+  document.getElementById('revision-box').hidden = !isDenied;
+  toast(status === 'approved' ? 'Post approved ✓' : isDenied ? 'Post denied — describe the fix below' : 'Status updated');
+}
+
+function copyRevisionRequest() {
+  const post = POSTS.find(p => p.id === activePanelId);
+  if (!post) return;
+  const note = document.getElementById('panel-note').value.trim();
+  const text = `Revise ${activePanelId}${note ? ': ' + note : ' — see denied post'}`;
+  navigator.clipboard.writeText(text).catch(() => {});
+  const btn = document.getElementById('revision-copy-btn');
+  btn.textContent = 'Copied ✓ — paste to Claude';
+  setTimeout(() => { btn.textContent = '📋 Copy revision request for Claude'; }, 2000);
 }
 
 function showLightbox(url) {
