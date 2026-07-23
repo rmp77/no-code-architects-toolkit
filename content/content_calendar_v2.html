@@ -1230,11 +1230,12 @@ function showMedia(id) {
       const post = POSTS.find(p => p.id === id);
       const bg = post ? (PHASE_BG[post.pmps] || 'rgba(128,128,128,0.09)') : 'rgba(128,128,128,0.09)';
       const col = post ? (PHASE_COLORS[post.pmps] || 'var(--text-3)') : 'var(--text-3)';
+      const escapedUrl = m.url.replace(/'/g, "\\'");
       preview.innerHTML = `
-        <div style="padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;background:${bg};">
+        <div onclick="navigator.clipboard.writeText('${escapedUrl}').then(()=>{const t=this.querySelector('.copy-lbl');t.textContent='URL copied ✓';setTimeout(()=>{t.textContent='Click to copy image URL'},1800)})" style="padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;background:${bg};cursor:pointer;" title="Click to copy image URL">
           <span style="font-size:32px;line-height:1">📷</span>
           <span style="font-size:11px;font-weight:700;color:${col};letter-spacing:0.06em;text-transform:uppercase">AI Photo Ready</span>
-          <a href="${m.url}" target="_blank" rel="noopener" style="font-size:11px;color:${col};text-decoration:underline;opacity:0.8">View image ↗</a>
+          <span class="copy-lbl" style="font-size:10px;color:${col};opacity:0.75">Click to copy image URL</span>
         </div>`;
     }
   } else {
