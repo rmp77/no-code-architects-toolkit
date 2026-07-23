@@ -929,6 +929,14 @@ const RAW_POSTS = [
     id: 'c1', dayOffset: 3, pmps: 'carousel', initialStatus: 'draft',
     platforms: ['facebook','instagram','linkedin'],
     media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_201006_243a48f9-6f4c-404c-9369-9431fb688c80.png', type: 'image/png' },
+    slides: [
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-8212f6cf-87cd-41ab-9baa-77d549e3d1a1.jpg',
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-a8b9f6ab-6818-4e4c-b673-2bfdbe4b5b1c.jpg',
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-221ac6c3-3b0a-4c13-8a85-47bfc1aaa56f.jpg',
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-b27f8b26-0387-44c0-89a5-506354a74e7c.jpg',
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-0de48d17-e585-46fb-b221-144aac328a43.jpg',
+      'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-b6c5296c-8666-47c1-a25b-d4337a16d62b.jpg',
+    ],
     content: `[6-SLIDE CAROUSEL — Community Impact]\n\nSlide 1 — HOOK\n"What actually happens when a wholesaler closes in your neighborhood?"\n\nSlide 2 — BEFORE\nVacant. Neglected. Dragging down property values for the whole block.\n\nSlide 3 — AFTER\nRenovated. Sold to a family who actually wants to be there.\n\nSlide 4 — "You made this possible."\n\nSlide 5 — IMPACT\n• 3 neighbors' property values increased\n• 1 family found their home\n• 1 seller got out of a bad situation\n\nSlide 6 — CTA\n"This is the work. DM CALLS."`,
     time: '2:00 PM'
   },
@@ -1249,10 +1257,24 @@ function showMedia(id) {
   const filled = document.getElementById('panel-media-filled');
   const preview = document.getElementById('panel-media-preview');
   const m = MEDIA[id];
+  const post = POSTS.find(p => p.id === id);
   if (m) {
     empty.hidden = true;
     filled.hidden = false;
-    if (m.type.startsWith('video')) {
+    if (post && post.slides && post.slides.length > 1) {
+      const heroEsc = m.url.replace(/`/g, '\\`');
+      const slideGrid = post.slides.map((url, i) => {
+        const esc = url.replace(/`/g, '\\`');
+        return `<div style="position:relative;cursor:zoom-in;" onclick="showLightbox(\`${esc}\`)">
+          <img src="${url}" alt="Slide ${i+1}" style="width:100%;height:90px;object-fit:cover;display:block;border-radius:4px;">
+          <div style="position:absolute;bottom:3px;left:4px;background:rgba(0,0,0,0.65);color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;">${i+1}</div>
+        </div>`;
+      }).join('');
+      preview.innerHTML = `
+        <img src="${m.url}" alt="Cover" style="width:100%;display:block;max-height:160px;object-fit:cover;cursor:zoom-in;" onclick="showLightbox(\`${heroEsc}\`)">
+        <div style="padding:10px 12px 6px;font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.05em;text-transform:uppercase;">Carousel slides · ${post.slides.length}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 12px 12px;">${slideGrid}</div>`;
+    } else if (m.type.startsWith('video')) {
       preview.innerHTML = `<video src="${m.url}" controls></video>`;
     } else {
       const escapedUrl = m.url.replace(/`/g, '\\`');
