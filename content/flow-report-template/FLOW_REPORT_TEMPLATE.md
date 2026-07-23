@@ -1,8 +1,10 @@
 # The Flow Report — Daily Production Template
 
-**Format:** AI news anchor video · 15 seconds · 1080p · 16:9  
-**Purpose:** City-by-city Google Ads cost transparency · Drives to Flow Program  
-**Cadence:** Daily · Alternate Marcus (Mon/Wed/Fri) and Claire (Tue/Thu)
+**Format:** AI puppet anchor video · 15 seconds · 1080p · 9:16  
+**Purpose:** Google Ads cost transparency · Drives to Flow Program  
+**Cadence:** Daily · Chester and Wanda co-anchor every episode (duo format)  
+**Show branding:** Real Estate News Network (RENN)  
+**Character concept:** Felt puppet anchors — "the whole industry is a zoo"
 
 ---
 
@@ -10,10 +12,16 @@
 
 | Asset | Higgsfield Job ID | Notes |
 |---|---|---|
-| Marcus Hale (anchor image) | `cbee5198-a577-4d38-b4dc-6bf9f297d5fc` | Male, navy suit, news desk |
-| Claire Bennett (anchor image) | `f9453360-5a14-4b40-a371-a63b81fa60d6` | Female, charcoal blazer, same set |
-| Brooks voice (male) | `c2acff45-84b2-4974-892d-89fa2d4e5598` | Use for Marcus episodes |
-| Sloane voice (female) | `b57b22a0-f287-405b-bc82-6f08f5e6bb1f` | Use for Claire episodes |
+| Chester (male puppet anchor) | `d8aa445d-1a7a-4699-9c57-ab62a1e6f027` | Blue fuzzy felt, navy suit, RENN desk |
+| Wanda (female puppet anchor) | `745563d6-aac0-489e-ba61-22c4f69f11e3` | Pink fuzzy felt, charcoal blazer, RENN desk |
+| Brooks voice (Chester) | `c2acff45-84b2-4974-892d-89fa2d4e5598` | Male voice — use for Chester lines |
+| Sloane voice (Wanda) | `b57b22a0-f287-405b-bc82-6f08f5e6bb1f` | Female voice — use for Wanda lines |
+
+### Retired Characters (do not use)
+| Asset | Higgsfield Job ID | Notes |
+|---|---|---|
+| Marcus Hale (retired) | `cbee5198-a577-4d38-b4dc-6bf9f297d5fc` | Replaced by Chester |
+| Claire Bennett (retired) | `f9453360-5a14-4b40-a371-a63b81fa60d6` | Replaced by Wanda |
 
 ---
 
