@@ -1,0 +1,1371 @@
+<title>RMP Content Calendar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────── */
+:root {
+  --bg:           #F0EFEC;
+  --surface:      #FFFFFF;
+  --surface2:     #F7F6F4;
+  --border:       #E2E0DB;
+  --text-1:       #1C1B28;
+  --text-2:       #6B6875;
+  --text-3:       #9E9CA8;
+  --accent:       #4F46E5;
+  --accent-soft:  #EEF0FD;
+
+  --live:         #16A34A;
+  --live-bg:      #DCFCE7;
+  --denied:       #E11D48;
+  --denied-bg:    #FFE4E6;
+  --pending:      #6B6875;
+  --pending-bg:   #F0EFEC;
+  --draft:        #C2820A;
+  --draft-bg:     #FEF3C7;
+
+  --pmps-problem:  #DC2626;
+  --pmps-mistake:  #EA580C;
+  --pmps-pain:     #7C3AED;
+  --pmps-solution: #059669;
+  --pmps-pleasure: #2563EB;
+  --pmps-carousel: #DB2777;
+
+  --plt-facebook:  #1877F2;
+  --plt-instagram: #E1306C;
+  --plt-x:         #14171A;
+  --plt-linkedin:  #0A66C2;
+  --plt-youtube:   #FF0000;
+  --plt-tiktok:    #010101;
+
+  --radius:  8px;
+  --chip-r:  6px;
+  --shadow:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:          #11151F;
+    --surface:     #1A1F2E;
+    --surface2:    #141828;
+    --border:      #252B3B;
+    --text-1:      #E8EAF4;
+    --text-2:      #8087A0;
+    --text-3:      #4B5168;
+    --accent:      #7B74F5;
+    --accent-soft: #1D1C3D;
+    --live-bg:     #052E16;
+    --denied-bg:   #300A14;
+    --pending-bg:  #1A1F2E;
+    --draft-bg:    #2B1D05;
+    --plt-x:       #E7E9EA;
+    --plt-tiktok:  #E7E9EA;
+    --shadow:      0 1px 3px rgba(0,0,0,.3);
+    --shadow-lg:   0 8px 24px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:          #11151F;
+  --surface:     #1A1F2E;
+  --surface2:    #141828;
+  --border:      #252B3B;
+  --text-1:      #E8EAF4;
+  --text-2:      #8087A0;
+  --text-3:      #4B5168;
+  --accent:      #7B74F5;
+  --accent-soft: #1D1C3D;
+  --live-bg:     #052E16;
+  --denied-bg:   #300A14;
+  --pending-bg:  #1A1F2E;
+  --draft-bg:    #2B1D05;
+  --plt-x:       #E7E9EA;
+  --plt-tiktok:  #E7E9EA;
+  --shadow:      0 1px 3px rgba(0,0,0,.3);
+  --shadow-lg:   0 8px 24px rgba(0,0,0,.4);
+}
+:root[data-theme="light"] {
+  --bg:          #F0EFEC;
+  --surface:     #FFFFFF;
+  --surface2:    #F7F6F4;
+  --border:      #E2E0DB;
+  --text-1:      #1C1B28;
+  --text-2:      #6B6875;
+  --text-3:      #9E9CA8;
+  --accent:      #4F46E5;
+  --accent-soft: #EEF0FD;
+  --live-bg:     #DCFCE7;
+  --denied-bg:   #FFE4E6;
+  --pending-bg:  #F0EFEC;
+  --draft-bg:    #FEF3C7;
+  --plt-x:       #14171A;
+  --plt-tiktok:  #010101;
+  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:   0 8px 24px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
+}
+
+/* ── RESET ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+#cal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 52px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+.logo-mark {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+.header-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-2);
+  border-radius: var(--radius);
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  font-size: 16px;
+  transition: background .15s, color .15s;
+}
+.btn-icon:hover { background: var(--surface2); color: var(--text-1); }
+.btn-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+#week-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  min-width: 160px;
+  text-align: center;
+}
+.header-stats {
+  display: flex;
+  gap: 6px;
+  margin-left: 12px;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+.stat-pill.live   { background: var(--live-bg);    color: var(--live); }
+.stat-pill.denied { background: var(--denied-bg);  color: var(--denied); }
+.stat-pill.pending{ background: var(--pending-bg); color: var(--pending); }
+.stat-pill.draft  { background: var(--draft-bg);   color: var(--draft); }
+
+/* ── PMPS STRIP ─────────────────────────────────────────────── */
+#pmps-strip {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+#pmps-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-align: left;
+  transition: color .15s;
+}
+#pmps-toggle:hover { color: var(--text-1); }
+#pmps-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+#pmps-toggle svg {
+  margin-left: auto;
+  transition: transform .2s;
+  flex-shrink: 0;
+}
+#pmps-strip.open #pmps-toggle svg { transform: rotate(180deg); }
+.pmps-phases-row {
+  display: none;
+  align-items: stretch;
+  gap: 0;
+  padding: 0 16px 12px;
+}
+#pmps-strip.open .pmps-phases-row { display: flex; }
+.pmps-phase {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border-left: 3px solid currentColor;
+  background: var(--surface2);
+  margin-right: 6px;
+}
+.pmps-phase:last-child { margin-right: 0; }
+.pmps-phase-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.pmps-phase-desc {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.phase-problem  { color: var(--pmps-problem); }
+.phase-mistake  { color: var(--pmps-mistake); }
+.phase-pain     { color: var(--pmps-pain); }
+.phase-solution { color: var(--pmps-solution); }
+.phase-pleasure { color: var(--pmps-pleasure); }
+.phase-carousel { color: var(--pmps-carousel); }
+.pmps-summary-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pmps-dot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.pmps-dot-mark {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pmps-dot-sep {
+  color: var(--border);
+  font-size: 13px;
+}
+
+/* ── CALENDAR GRID ──────────────────────────────────────────── */
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+}
+.day-col {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.day-col:last-child { border-right: none; }
+.day-header {
+  padding: 8px 10px 7px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.day-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.day-num {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.day-header.is-today .day-num {
+  color: var(--accent);
+}
+.day-header.is-today .day-name {
+  color: var(--accent);
+}
+.day-count {
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface2);
+  color: var(--text-3);
+  border-radius: 10px;
+  padding: 1px 6px;
+  margin-left: auto;
+}
+.day-count.has-pending {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.day-chips {
+  flex: 1;
+  overflow-y: auto;
+  padding: 7px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+}
+.day-chips::-webkit-scrollbar { width: 3px; }
+.day-chips::-webkit-scrollbar-track { background: transparent; }
+.day-chips::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── CHIP ───────────────────────────────────────────────────── */
+.chip {
+  background: var(--surface);
+  border-radius: var(--chip-r);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  cursor: pointer;
+  transition: box-shadow .15s, transform .1s;
+  position: relative;
+  overflow: hidden;
+}
+.chip:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip-inner { padding: 8px 9px 7px; }
+
+.chip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  gap: 4px;
+}
+.phase-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.phase-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sb-live    { background: var(--live-bg);    color: var(--live); }
+.sb-denied  { background: var(--denied-bg);  color: var(--denied); }
+.sb-pending { background: var(--pending-bg); color: var(--pending); }
+.sb-draft   { background: var(--draft-bg);   color: var(--draft); }
+
+.chip-preview {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 7px;
+  white-space: pre-line;
+}
+.chip-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.platform-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.plt-dot {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-size: 7px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+.plt-dot.facebook  { background: var(--plt-facebook); }
+.plt-dot.instagram { background: var(--plt-instagram); }
+.plt-dot.x         { background: var(--plt-x); }
+.plt-dot.linkedin  { background: var(--plt-linkedin); }
+.plt-dot.youtube   { background: var(--plt-youtube); }
+.plt-dot.tiktok    { background: var(--plt-tiktok); }
+
+.chip-time {
+  font-size: 10px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── PANEL ──────────────────────────────────────────────────── */
+#backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.3);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+#backdrop.visible { opacity: 1; pointer-events: auto; }
+
+#panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 420px;
+  max-width: 100vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
+}
+#panel.open { transform: translateX(0); }
+
+.panel-head {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.panel-head-meta { flex: 1; min-width: 0; }
+.panel-phase-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.panel-phase-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.panel-phase-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+.panel-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.panel-head-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 18px;
+  line-height: 1;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.panel-head-close:hover { background: var(--surface2); color: var(--text-1); }
+.panel-head-close:focus-visible { outline: 2px solid var(--accent); }
+
+.panel-date {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 2px;
+}
+.panel-platform-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.panel-plt-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--surface2);
+  padding: 2px 7px 2px 4px;
+  border-radius: 4px;
+}
+.panel-plt-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+.panel-plt-dot.facebook  { background: var(--plt-facebook); }
+.panel-plt-dot.instagram { background: var(--plt-instagram); }
+.panel-plt-dot.x         { background: var(--plt-x); }
+.panel-plt-dot.linkedin  { background: var(--plt-linkedin); }
+.panel-plt-dot.youtube   { background: var(--plt-youtube); }
+.panel-plt-dot.tiktok    { background: var(--plt-tiktok); }
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.panel-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.panel-content-text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-1);
+  white-space: pre-line;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.panel-media-empty {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+}
+.panel-media-empty:hover { border-color: var(--accent); background: var(--accent-soft); }
+.media-upload-icon { color: var(--text-3); margin-bottom: 2px; }
+.media-hint {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.media-hint strong { color: var(--accent); font-weight: 600; }
+
+.panel-media-filled {
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+.panel-media-filled img { width: 100%; display: block; max-height: 240px; object-fit: contain; }
+.panel-media-filled video { width: 100%; display: block; max-height: 240px; }
+.media-controls {
+  position: absolute;
+  top: 8px; right: 8px;
+  display: flex;
+  gap: 6px;
+}
+.media-ctrl-btn {
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+}
+.media-ctrl-btn:hover { background: rgba(0,0,0,.85); }
+
+.panel-note-field {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-1);
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+  transition: border-color .15s;
+}
+.panel-note-field:focus { outline: none; border-color: var(--accent); }
+.panel-note-field::placeholder { color: var(--text-3); }
+
+.panel-actions {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  font-family: inherit;
+}
+.btn:hover { opacity: .88; }
+.btn:active { transform: scale(.97); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-approve {
+  background: var(--live);
+  color: #fff;
+  flex: 1;
+}
+.btn-deny {
+  background: var(--denied-bg);
+  color: var(--denied);
+  flex: 1;
+}
+.btn-send {
+  background: var(--accent);
+  color: #fff;
+  flex: 1;
+}
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+}
+
+/* ── TOAST ──────────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--text-1);
+  color: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+</style>
+
+<div id="app">
+  <!-- HEADER -->
+  <header id="cal-header">
+    <div class="header-brand">
+      <span class="logo-mark">RMP</span>
+      <span class="header-title">Content Calendar</span>
+    </div>
+    <div class="header-nav">
+      <button class="btn-icon" id="btn-prev" aria-label="Previous week">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span id="week-label"></span>
+      <button class="btn-icon" id="btn-next" aria-label="Next week">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="header-stats" id="stats-bar"></div>
+    <button class="btn-icon" id="btn-theme" aria-label="Toggle theme" style="margin-left:4px;">
+      <svg id="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <svg id="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
+        <path d="M13.5 10A6 6 0 016 2.5a6 6 0 100 11 6 6 0 007.5-3.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- PMPS STRIP -->
+  <div id="pmps-strip">
+    <button id="pmps-toggle" aria-expanded="false" aria-controls="pmps-body">
+      <span style="color:var(--text-1);font-weight:700;">PMPS Workflow</span>
+      <span id="pmps-summary" class="pmps-summary-dots"></span>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div id="pmps-body" class="pmps-phases-row" hidden>
+      <div class="pmps-phase phase-problem">
+        <div class="pmps-phase-label">Problem</div>
+        <div class="pmps-phase-desc">Surface a pain the audience already feels</div>
+      </div>
+      <div class="pmps-phase phase-mistake">
+        <div class="pmps-phase-label">Mistake</div>
+        <div class="pmps-phase-desc">Name the common error keeping them stuck</div>
+      </div>
+      <div class="pmps-phase phase-pain">
+        <div class="pmps-phase-label">Pain</div>
+        <div class="pmps-phase-desc">Deepen the cost of staying the same</div>
+      </div>
+      <div class="pmps-phase phase-solution">
+        <div class="pmps-phase-label">Solution</div>
+        <div class="pmps-phase-desc">Introduce the path forward</div>
+      </div>
+      <div class="pmps-phase phase-pleasure">
+        <div class="pmps-phase-label">Pleasure</div>
+        <div class="pmps-phase-desc">Show the transformed life on the other side</div>
+      </div>
+      <div class="pmps-phase phase-carousel">
+        <div class="pmps-phase-label">Carousel</div>
+        <div class="pmps-phase-desc">Multi-slide story or comparison format</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="calendar"></div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="backdrop"></div>
+<div id="panel" role="dialog" aria-modal="true" aria-label="Post detail">
+  <div class="panel-head">
+    <div class="panel-head-meta">
+      <div class="panel-phase-row">
+        <span class="panel-phase-badge" id="panel-phase">
+          <span class="panel-phase-dot" id="panel-phase-dot"></span>
+          <span id="panel-phase-label"></span>
+        </span>
+        <span class="panel-status-badge" id="panel-status-badge"></span>
+      </div>
+      <div class="panel-date" id="panel-date"></div>
+      <div class="panel-platform-row" id="panel-platforms"></div>
+    </div>
+    <button class="panel-head-close" id="panel-close" aria-label="Close panel">✕</button>
+  </div>
+  <div class="panel-body">
+    <div>
+      <div class="panel-section-label">Caption</div>
+      <div class="panel-content-text" id="panel-content"></div>
+    </div>
+    <div>
+      <div class="panel-section-label">Media</div>
+      <div id="panel-media-empty" class="panel-media-empty" tabindex="0" role="button" aria-label="Upload media">
+        <svg class="media-upload-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="media-hint"><strong>Click to attach</strong> or drag &amp; drop</div>
+        <div class="media-hint" style="font-size:11px;">Image or video</div>
+      </div>
+      <div id="panel-media-filled" class="panel-media-filled" hidden>
+        <div id="panel-media-preview"></div>
+        <div class="media-controls">
+          <button class="media-ctrl-btn" onclick="removeMedia()">✕ Remove</button>
+          <button class="media-ctrl-btn" onclick="document.getElementById('media-file-input').click()">↻ Replace</button>
+        </div>
+      </div>
+      <input type="file" id="media-file-input" accept="image/*,video/*" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+    </div>
+    <div>
+      <div class="panel-section-label">Review note</div>
+      <textarea class="panel-note-field" id="panel-note" placeholder="Add feedback or edit instructions…"></textarea>
+    </div>
+  </div>
+  <div class="panel-actions" id="panel-actions"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────
+const TODAY = new Date(2026, 6, 22); // July 22 2026
+
+const PLT_LABELS = {
+  facebook: 'F', instagram: 'I', x: 'X', linkedin: 'Li', youtube: 'Yt', tiktok: 'Tk'
+};
+const PLT_NAMES = {
+  facebook: 'Facebook', instagram: 'Instagram', x: 'X / Twitter',
+  linkedin: 'LinkedIn', youtube: 'YouTube', tiktok: 'TikTok'
+};
+
+const PHASE_COLORS = {
+  problem: 'var(--pmps-problem)',
+  mistake: 'var(--pmps-mistake)',
+  pain: 'var(--pmps-pain)',
+  solution: 'var(--pmps-solution)',
+  pleasure: 'var(--pmps-pleasure)',
+  carousel: 'var(--pmps-carousel)',
+};
+const PHASE_BG = {
+  problem: 'rgba(220,38,38,0.10)',
+  mistake: 'rgba(234,88,12,0.10)',
+  pain: 'rgba(124,58,237,0.10)',
+  solution: 'rgba(5,150,105,0.10)',
+  pleasure: 'rgba(37,99,235,0.10)',
+  carousel: 'rgba(219,39,119,0.10)',
+};
+
+const ALL_PLATFORMS = ['facebook','instagram','x','linkedin','youtube','tiktok'];
+
+const RAW_POSTS = [
+  {
+    id: 't1', dayOffset: 0, pmps: 'solution', initialStatus: 'approved',
+    platforms: ALL_PLATFORMS,
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_122940_3cfe85ba-61c8-4ffb-9070-0912c6389ea4.png', type: 'image/png' },
+    content: `The housing market is broken. But not for the reasons you think.\n\nWhile most buyers compete over 3 beds / 2 baths on Zillow, we're buying properties nobody else can see.\n\nOff-market. Pre-foreclosure. Owner-occupied distress.\n\nDM CALLS if you want to learn how we find these off-market opportunities.\n\n#RealEstate #WholesaleRealEstate`,
+    time: '9:14 AM'
+  },
+  {
+    id: 't2', dayOffset: 0, pmps: 'solution', initialStatus: 'approved',
+    platforms: ['facebook','instagram','x','linkedin'],
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_122942_fc69764c-eeed-4087-9cb6-3e798e828203.png', type: 'image/png' },
+    content: `A friend of mine kept disappearing for a few days at a time.\n\nFinally asked where he was going.\n\n"Closing deals in neighborhoods nobody's looking at."\n\nNow I know what he meant.\n\nDM CALLS to learn how we train wholesalers to do exactly this.`,
+    time: '2:31 PM'
+  },
+  {
+    id: 'p1', dayOffset: 1, pmps: 'problem', initialStatus: 'pending',
+    platforms: ALL_PLATFORMS,
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_121937_c0bf81c9-cdea-4a6e-b267-dbcbeea10392.png', type: 'image/png' },
+    content: `Most homeowners sitting on distressed properties have no idea what they're sitting on.\n\nThey're paying taxes on empty houses, dealing with maintenance calls, and fighting with banks over missed payments.\n\nThere's a better option.\n\nDM CALLS.\n\n#RealEstate #OffMarket`,
+    time: '10:00 AM'
+  },
+  {
+    id: 'p2', dayOffset: 2, pmps: 'mistake', initialStatus: 'pending',
+    platforms: ['facebook','instagram','x','linkedin'],
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_121939_2d7a8c6b-7a48-4138-bc64-700b8e660cb1.png', type: 'image/png' },
+    content: `The biggest mistake most new investors make?\n\nChasing listed properties where everyone else is looking.\n\nThe deals that actually change lives are never on Zillow.\n\nDM CALLS to learn where we find them.\n\n#WholesaleRealEstate #InvestSmart`,
+    time: '11:30 AM'
+  },
+  {
+    id: 'p3', dayOffset: 3, pmps: 'pain', initialStatus: 'pending',
+    platforms: ALL_PLATFORMS,
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_121942_7942e377-7db9-47b2-a5bc-c12f3cbcf80d.png', type: 'image/png' },
+    content: `Every week you wait is another week someone else closes the deal you should have had.\n\nWe've trained dozens of wholesalers who said they "weren't ready."\n\nThey were. You probably are too.\n\nDM CALLS.\n\n#RealEstate #Wholesaling`,
+    time: '9:00 AM'
+  },
+  {
+    id: 'c1', dayOffset: 3, pmps: 'carousel', initialStatus: 'draft',
+    platforms: ['facebook','instagram','linkedin'],
+    media: { url: 'https://database.blotato.io/storage/v1/object/public/public_media/f8e73558-dada-423e-b571-466f8ee58353/videogen2-render-8212f6cf-87cd-41ab-9baa-77d549e3d1a1.jpg', type: 'image/jpeg' },
+    content: `[6-SLIDE CAROUSEL — Community Impact]\n\nSlide 1 — HOOK\n"What actually happens when a wholesaler closes in your neighborhood?"\n\nSlide 2 — BEFORE\nVacant. Neglected. Dragging down property values for the whole block.\n\nSlide 3 — AFTER\nRenovated. Sold to a family who actually wants to be there.\n\nSlide 4 — "You made this possible."\n\nSlide 5 — IMPACT\n• 3 neighbors' property values increased\n• 1 family found their home\n• 1 seller got out of a bad situation\n\nSlide 6 — CTA\n"This is the work. DM CALLS."`,
+    time: '2:00 PM'
+  },
+  {
+    id: 'p4', dayOffset: 4, pmps: 'solution', initialStatus: 'pending',
+    platforms: ALL_PLATFORMS,
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_122000_8f603bb7-088a-4b77-8bad-6ecb81eba251.png', type: 'image/png' },
+    content: `We built a system that finds off-market properties before anyone else knows they exist.\n\nDistressed sellers. Vacant homes. Pre-foreclosures.\n\nOur wholesalers use this playbook every week in San Diego.\n\nDM CALLS if you want in.\n\n#SanDiego #RealEstateInvesting`,
+    time: '10:00 AM'
+  },
+  {
+    id: 'p5', dayOffset: 5, pmps: 'pleasure', initialStatus: 'pending',
+    platforms: ['facebook','instagram','x','linkedin'],
+    media: { url: 'https://d8j0ntlcm91z4.cloudfront.net/user_3GQ7lZrJCnFzl43jhAMpc4HBEgq/hf_20260723_122944_6093ad7c-4df4-456d-afaf-c8238992fe88.png', type: 'image/png' },
+    content: `6 months ago he had never closed a real estate deal.\n\nLast month he closed three.\n\nThat's what happens when you stop waiting for perfect conditions and start learning the right system.\n\nDM CALLS.\n\n#WholesaleSuccess #RealEstate`,
+    time: '11:00 AM'
+  },
+];
+
+// Resolve absolute dates
+const POSTS = RAW_POSTS.map(p => ({
+  ...p,
+  date: addDays(TODAY, p.dayOffset)
+}));
+
+// ── STATE ─────────────────────────────────────────────────────
+const STATE = {}; // { [id]: { status, note } }
+const MEDIA = {}; // { [id]: { url, type } }
+POSTS.forEach(p => {
+  STATE[p.id] = { status: p.initialStatus, note: '' };
+  if (p.media) MEDIA[p.id] = p.media;
+});
+
+let weekOffset = 0;
+let activePanelId = null;
+let currentTheme = localStorage.getItem('rmp-theme') || 'system';
+
+// ── HELPERS ───────────────────────────────────────────────────
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+}
+function fmtShort(d) {
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function getWeekDates() {
+  const day = TODAY.getDay();
+  const monday = addDays(TODAY, -(day === 0 ? 6 : day - 1));
+  const start = addDays(monday, weekOffset * 7);
+  return Array.from({length: 7}, (_, i) => addDays(start, i));
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function statusLabel(s) {
+  return { approved:'✓ Live', denied:'✕ Denied', pending:'Pending', draft:'Draft' }[s] || s;
+}
+function statusClass(s) {
+  return { approved:'sb-live', denied:'sb-denied', pending:'sb-pending', draft:'sb-draft' }[s] || '';
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── THEME ─────────────────────────────────────────────────────
+function applyTheme(t) {
+  const root = document.documentElement;
+  const sun = document.getElementById('icon-sun');
+  const moon = document.getElementById('icon-moon');
+  if (t === 'dark') {
+    root.dataset.theme = 'dark';
+    sun.style.display = 'none';
+    moon.style.display = '';
+  } else if (t === 'light') {
+    root.dataset.theme = 'light';
+    sun.style.display = '';
+    moon.style.display = 'none';
+  } else {
+    delete root.dataset.theme;
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    sun.style.display = isDark ? 'none' : '';
+    moon.style.display = isDark ? '' : 'none';
+  }
+}
+function toggleTheme() {
+  const cycle = ['system','light','dark'];
+  const idx = cycle.indexOf(currentTheme);
+  currentTheme = cycle[(idx + 1) % cycle.length];
+  localStorage.setItem('rmp-theme', currentTheme);
+  applyTheme(currentTheme);
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function renderStats() {
+  const weeks = getWeekDates();
+  const weekPosts = POSTS.filter(p => weeks.some(d => sameDay(p.date, d)));
+  const counts = { approved:0, denied:0, pending:0, draft:0 };
+  weekPosts.forEach(p => counts[STATE[p.id].status]++);
+  const bar = document.getElementById('stats-bar');
+  bar.innerHTML = `
+    <span class="stat-pill live">✓ ${counts.approved}</span>
+    <span class="stat-pill denied">✕ ${counts.denied}</span>
+    <span class="stat-pill pending">○ ${counts.pending + counts.draft}</span>
+  `;
+}
+
+// ── PMPS SUMMARY ──────────────────────────────────────────────
+function renderPmpsSummary() {
+  const phases = ['problem','mistake','pain','solution','pleasure','carousel'];
+  const summary = document.getElementById('pmps-summary');
+  summary.innerHTML = phases.map((ph, i) => `
+    <span class="pmps-dot">
+      <span class="pmps-dot-mark" style="background:${PHASE_COLORS[ph]}"></span>
+      ${capitalize(ph)}
+    </span>
+    ${i < phases.length - 1 ? '<span class="pmps-dot-sep">·</span>' : ''}
+  `).join('');
+}
+
+// ── CHIP BUILDER ──────────────────────────────────────────────
+function buildChip(post) {
+  const s = STATE[post.id].status;
+  const color = PHASE_COLORS[post.pmps] || 'var(--text-3)';
+  const plDots = post.platforms.map(pl =>
+    `<span class="plt-dot ${pl}" title="${PLT_NAMES[pl]}">${PLT_LABELS[pl]}</span>`
+  ).join('');
+
+  const div = document.createElement('div');
+  div.className = 'chip';
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('role', 'button');
+  div.setAttribute('aria-label', `${capitalize(post.pmps)} post — ${statusLabel(s)}`);
+  div.style.borderLeftColor = color;
+  const m = MEDIA[post.id];
+  const thumbHtml = m ? `<img src="${m.url}" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;display:block;">` : '';
+  div.innerHTML = `
+    ${thumbHtml}
+    <div class="chip-inner">
+      <div class="chip-top">
+        <span class="phase-badge" style="color:${color}">
+          <span class="phase-dot" style="background:${color}"></span>
+          ${capitalize(post.pmps)}
+        </span>
+        <span class="status-badge ${statusClass(s)}">${statusLabel(s)}</span>
+      </div>
+      <div class="chip-preview">${post.content}</div>
+      <div class="chip-foot">
+        <div class="platform-dots">${plDots}</div>
+        <span class="chip-time">${post.time || ''}</span>
+      </div>
+    </div>
+  `;
+  div.addEventListener('click', () => openPanel(post.id));
+  div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPanel(post.id); } });
+  return div;
+}
+
+// ── CALENDAR RENDER ───────────────────────────────────────────
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function renderCalendar() {
+  const weeks = getWeekDates();
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+
+  // Week label
+  const label = document.getElementById('week-label');
+  label.textContent = `${fmtShort(weeks[0])} – ${fmtShort(weeks[6])}`;
+
+  weeks.forEach((day, i) => {
+    const dayPosts = POSTS.filter(p => sameDay(p.date, day));
+    const pendingCount = dayPosts.filter(p => ['pending','draft'].includes(STATE[p.id].status)).length;
+    const isToday = sameDay(day, TODAY);
+
+    const col = document.createElement('div');
+    col.className = 'day-col';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'day-header' + (isToday ? ' is-today' : '');
+    hdr.innerHTML = `
+      <div>
+        <div class="day-name">${DAY_NAMES[i]}</div>
+        <div class="day-num">${day.getDate()}</div>
+      </div>
+      ${dayPosts.length ? `<span class="day-count${pendingCount ? ' has-pending' : ''}">${dayPosts.length}</span>` : ''}
+    `;
+
+    const chips = document.createElement('div');
+    chips.className = 'day-chips';
+    dayPosts.forEach(p => chips.appendChild(buildChip(p)));
+
+    col.appendChild(hdr);
+    col.appendChild(chips);
+    cal.appendChild(col);
+  });
+
+  renderStats();
+}
+
+// ── PANEL ─────────────────────────────────────────────────────
+function openPanel(id) {
+  const post = POSTS.find(p => p.id === id);
+  if (!post) return;
+  activePanelId = id;
+  const s = STATE[id];
+  const color = PHASE_COLORS[post.pmps] || 'var(--text-3)';
+
+  document.getElementById('panel-phase-dot').style.background = color;
+  document.getElementById('panel-phase-label').textContent = capitalize(post.pmps);
+  document.getElementById('panel-phase-label').style.color = color;
+
+  const sb = document.getElementById('panel-status-badge');
+  sb.textContent = statusLabel(s.status);
+  sb.className = `panel-status-badge ${statusClass(s.status)}`;
+
+  document.getElementById('panel-date').textContent = fmtDate(post.date) + (post.time ? ' · ' + post.time : '');
+  document.getElementById('panel-content').textContent = post.content;
+
+  const plRow = document.getElementById('panel-platforms');
+  plRow.innerHTML = post.platforms.map(pl =>
+    `<span class="panel-plt-chip">
+      <span class="panel-plt-dot ${pl}"></span>
+      ${PLT_NAMES[pl]}
+    </span>`
+  ).join('');
+
+  document.getElementById('panel-note').value = s.note || '';
+
+  // Media
+  showMedia(id);
+
+  // Actions
+  renderPanelActions(id);
+
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('backdrop').classList.add('visible');
+  document.getElementById('panel-close').focus();
+}
+
+function renderPanelActions(id) {
+  const s = STATE[id].status;
+  const actions = document.getElementById('panel-actions');
+  const post = POSTS.find(p => p.id === id);
+  const isLive = s === 'approved';
+
+  if (isLive) {
+    actions.innerHTML = `
+      <button class="btn btn-secondary" style="flex:1" onclick="setStatus('${id}','pending')">Revert to Pending</button>
+      <button class="btn btn-send" onclick="sendPost('${id}')">📋 Copy for Slack</button>
+    `;
+  } else if (s === 'denied') {
+    actions.innerHTML = `
+      <button class="btn btn-secondary" style="flex:1" onclick="setStatus('${id}','pending')">Revert to Pending</button>
+      <button class="btn btn-approve" onclick="setStatus('${id}','approved')">Approve</button>
+    `;
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-deny" onclick="setStatus('${id}','denied')">Deny</button>
+      <button class="btn btn-approve" onclick="setStatus('${id}','approved')">Approve</button>
+      <button class="btn btn-send" onclick="sendPost('${id}')">📋 Copy for Slack ›</button>
+    `;
+  }
+}
+
+function setStatus(id, status) {
+  STATE[id].status = status;
+  STATE[id].note = document.getElementById('panel-note').value;
+  renderCalendar();
+  // Update panel in-place
+  const sb = document.getElementById('panel-status-badge');
+  sb.textContent = statusLabel(status);
+  sb.className = `panel-status-badge ${statusClass(status)}`;
+  renderPanelActions(id);
+  toast(status === 'approved' ? 'Post approved' : status === 'denied' ? 'Post denied' : 'Status updated');
+}
+
+function showLightbox(url) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:20px;';
+  overlay.onclick = () => overlay.remove();
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
+  const img = document.createElement('img');
+  img.src = url;
+  img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,0.6);';
+  img.onclick = e => e.stopPropagation();
+  overlay.appendChild(img);
+  document.body.appendChild(overlay);
+}
+
+function showMedia(id) {
+  const empty = document.getElementById('panel-media-empty');
+  const filled = document.getElementById('panel-media-filled');
+  const preview = document.getElementById('panel-media-preview');
+  const m = MEDIA[id];
+  if (m) {
+    empty.hidden = true;
+    filled.hidden = false;
+    if (m.type.startsWith('video')) {
+      preview.innerHTML = `<video src="${m.url}" controls></video>`;
+    } else {
+      const escapedUrl = m.url.replace(/`/g, '\\`');
+      preview.innerHTML = `<img src="${m.url}" alt="Post media" style="width:100%;display:block;max-height:260px;object-fit:cover;cursor:zoom-in;" onclick="showLightbox(\`${escapedUrl}\`)">`;
+    }
+  } else {
+    empty.hidden = false;
+    filled.hidden = true;
+    preview.innerHTML = '';
+  }
+}
+
+function removeMedia() {
+  if (!activePanelId) return;
+  delete MEDIA[activePanelId];
+  showMedia(activePanelId);
+  toast('Media removed');
+}
+
+function showSlackModal(text) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--surface);border-radius:12px;padding:20px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+
+  const title = document.createElement('div');
+  title.textContent = '📋 Copy for #rmp-social';
+  title.style.cssText = 'font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text-1);';
+
+  const hint = document.createElement('div');
+  hint.textContent = 'Paste into Slack, or tell Claude: "Send this post to Slack."';
+  hint.style.cssText = 'font-size:11px;color:var(--text-3);margin-bottom:12px;';
+
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.readOnly = true;
+  ta.style.cssText = 'width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--text-1);resize:vertical;min-height:140px;font-family:inherit;line-height:1.6;';
+
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:8px;margin-top:12px;';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = 'Copy to clipboard';
+  copyBtn.style.cssText = 'flex:1;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(text).then(() => { copyBtn.textContent = 'Copied ✓'; setTimeout(() => overlay.remove(), 800); });
+  };
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.cssText = 'padding:9px 18px;background:var(--surface2);color:var(--text-1);border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+  closeBtn.onclick = () => overlay.remove();
+
+  btns.append(copyBtn, closeBtn);
+  box.append(title, hint, ta, btns);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => ta.select(), 50);
+}
+
+function sendPost(id) {
+  STATE[id].note = document.getElementById('panel-note').value;
+  const post = POSTS.find(p => p.id === id);
+  const note = STATE[id].note;
+
+  const slackText = [
+    `📅 *${fmtDate(post.date)}*${post.time ? ' · ' + post.time : ''}`,
+    `🎯 Phase: *${capitalize(post.pmps)}* · ${statusLabel(STATE[id].status)}`,
+    `📲 ${post.platforms.map(p => PLT_NAMES[p]).join(', ')}`,
+    note ? `💬 _${note}_` : null,
+    '',
+    post.content
+  ].filter(v => v !== null).join('\n');
+
+  showSlackModal(slackText);
+}
+
+function closePanel() {
+  if (activePanelId) {
+    STATE[activePanelId].note = document.getElementById('panel-note').value;
+  }
+  activePanelId = null;
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('visible');
+}
+
+// ── MEDIA UPLOAD ──────────────────────────────────────────────
+function attachFile(file) {
+  if (!file || !activePanelId) return;
+  const url = URL.createObjectURL(file);
+  MEDIA[activePanelId] = { url, type: file.type };
+  showMedia(activePanelId);
+  toast('Media attached');
+}
+
+const emptyZone = document.getElementById('panel-media-empty');
+emptyZone.addEventListener('click', () => document.getElementById('media-file-input').click());
+emptyZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('media-file-input').click(); } });
+emptyZone.addEventListener('dragover', e => { e.preventDefault(); emptyZone.style.borderColor = 'var(--accent)'; emptyZone.style.background = 'var(--accent-soft)'; });
+emptyZone.addEventListener('dragleave', () => { emptyZone.style.borderColor = ''; emptyZone.style.background = ''; });
+emptyZone.addEventListener('drop', e => {
+  e.preventDefault();
+  emptyZone.style.borderColor = '';
+  emptyZone.style.background = '';
+  attachFile(e.dataTransfer.files[0]);
+});
+
+document.getElementById('media-file-input').addEventListener('change', e => {
+  attachFile(e.target.files[0]);
+  e.target.value = '';
+});
+
+// ── EVENTS ────────────────────────────────────────────────────
+document.getElementById('btn-prev').addEventListener('click', () => { weekOffset--; renderCalendar(); });
+document.getElementById('btn-next').addEventListener('click', () => { weekOffset++; renderCalendar(); });
+document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+document.getElementById('panel-close').addEventListener('click', closePanel);
+document.getElementById('backdrop').addEventListener('click', closePanel);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && activePanelId) closePanel(); });
+
+const pmpsToggle = document.getElementById('pmps-toggle');
+const pmpsBody = document.getElementById('pmps-body');
+const pmpsStrip = document.getElementById('pmps-strip');
+pmpsToggle.addEventListener('click', () => {
+  const isOpen = pmpsStrip.classList.toggle('open');
+  pmpsToggle.setAttribute('aria-expanded', isOpen);
+  pmpsBody.hidden = !isOpen;
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+applyTheme(currentTheme);
+renderPmpsSummary();
+renderCalendar();
+</script>

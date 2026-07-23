@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: no-code-architects-toolkit
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 300 --worker-class sync --keep-alive 80 --config gunicorn.conf.py app:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  - type: web
+    name: rmp-content-calendar
+    env: static
+    staticPublishPath: content/calendar
+    pullRequestPreviewsEnabled: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
