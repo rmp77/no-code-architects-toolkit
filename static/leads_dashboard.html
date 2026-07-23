@@ -496,6 +496,55 @@
       .sk-card { animation: none; }
       .search-btn, .export-btn, .copy-btn { transition: none; }
     }
+
+    /* ── SOURCE TABS ────────────────────────────────── */
+    .source-tabs {
+      display: flex; gap: 3px; margin-bottom: 22px;
+      background: var(--sidebar-surf); border-radius: 9px; padding: 4px;
+    }
+    .source-tab {
+      flex: 1; padding: 7px 2px; text-align: center;
+      background: transparent; border: none; border-radius: 6px;
+      color: var(--sidebar-text); font-size: 11px; font-weight: 700;
+      letter-spacing: .02em; cursor: pointer; font-family: inherit;
+      transition: all .15s; white-space: nowrap;
+    }
+    .source-tab.active { background: var(--accent); color: #fff; }
+    .source-tab:not(.active):hover { color: var(--sidebar-head); }
+
+    .source-section { display: none; }
+    .source-section.active { display: block; }
+
+    /* ── APIFY SOURCE BADGES ────────────────────────── */
+    .source-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      padding: 3px 9px; border-radius: 10px; text-transform: uppercase;
+    }
+    .source-badge.instagram { background: #FCE7F3; color: #9D174D; }
+    .source-badge.b2b       { background: #EDE9FE; color: #5B21B6; }
+    @media (prefers-color-scheme: dark) {
+      .source-badge.instagram { background: #500724; color: #FBCFE8; }
+      .source-badge.b2b       { background: #2E1065; color: #DDD6FE; }
+    }
+    :root[data-theme="dark"]  .source-badge.instagram { background: #500724; color: #FBCFE8; }
+    :root[data-theme="dark"]  .source-badge.b2b       { background: #2E1065; color: #DDD6FE; }
+    :root[data-theme="light"] .source-badge.instagram { background: #FCE7F3; color: #9D174D; }
+    :root[data-theme="light"] .source-badge.b2b       { background: #EDE9FE; color: #5B21B6; }
+
+    /* ── INSTAGRAM CARD EXTRAS ──────────────────────── */
+    .insta-handle { font-size: 12px; color: var(--accent-txt); margin-bottom: 8px; }
+    .insta-handle a { color: inherit; text-decoration: none; }
+    .insta-handle a:hover { text-decoration: underline; }
+    .insta-bio {
+      font-size: 12px; color: var(--text-2); line-height: 1.5; margin-top: 8px;
+      border-left: 3px solid var(--border); padding-left: 9px;
+    }
+    .follower-stat { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
+    .follower-stat strong { color: var(--text-1); }
+
+    /* ── FORM HINT ───────────────────────────────────── */
+    .form-hint { font-size: 11px; color: var(--sidebar-text); margin-top: 6px; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -513,11 +562,24 @@
     <span class="logo-name">Lead Finder</span>
   </div>
 
+  <!-- Source selector -->
+  <div class="source-tabs">
+    <button type="button" class="source-tab active" data-source="maps"
+            onclick="setSource('maps')">Maps</button>
+    <button type="button" class="source-tab" data-source="instagram"
+            onclick="setSource('instagram')">Instagram</button>
+    <button type="button" class="source-tab" data-source="b2b"
+            onclick="setSource('b2b')">B2B Finder</button>
+  </div>
+
   <form id="searchForm">
+
+    <!-- ── Google Maps section ── -->
+    <div class="source-section active" id="section-maps">
     <div class="form-group">
       <label class="form-label" for="businessType">What businesses?</label>
       <input id="businessType" type="text" class="form-input"
-             placeholder="Pick a vertical or type your own" list="verticalList" autocomplete="off" required>
+             placeholder="Pick a vertical or type your own" list="verticalList" autocomplete="off">
       <datalist id="verticalList">
         <option value="Immigration Lawyer">
         <option value="Insurance Agency">
@@ -581,7 +643,32 @@
     <div class="form-group">
       <label class="form-label" for="location">What area?</label>
       <input id="location" type="text" class="form-input"
-             placeholder="e.g. Miami, FL" autocomplete="off" required>
+             placeholder="e.g. Miami, FL" autocomplete="off">
+    </div>
+    </div><!-- /section-maps -->
+
+    <!-- ── Instagram section ── -->
+    <div class="source-section" id="section-instagram">
+      <div class="form-group">
+        <label class="form-label" for="igHashtags">Hashtags to scrape</label>
+        <input id="igHashtags" type="text" class="form-input"
+               placeholder="#realestatewholesaler, #reinvestor" autocomplete="off">
+        <div class="form-hint">Comma-separated. Scrapes public profiles using those tags to find investors &amp; wholesalers.</div>
+      </div>
+    </div>
+
+    <!-- ── B2B Finder section ── -->
+    <div class="source-section" id="section-b2b">
+      <div class="form-group">
+        <label class="form-label" for="b2bQuery">Job title / role</label>
+        <input id="b2bQuery" type="text" class="form-input"
+               placeholder="real estate wholesaler" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="b2bLocation">Location (optional)</label>
+        <input id="b2bLocation" type="text" class="form-input"
+               placeholder="Phoenix, AZ" autocomplete="off">
+      </div>
     </div>
 
     <div class="form-group">
@@ -643,7 +730,7 @@
   <div id="loadingState" style="display:none;">
     <div class="loading-hdr">
       <div class="loading-title" id="loadingTitle">Searching Google Maps…</div>
-      <div class="loading-sub">Gathering and enriching results — this takes 10–25 seconds</div>
+      <div class="loading-sub" id="loadingSub">Gathering and enriching results — this takes 10–25 seconds</div>
     </div>
     <div class="sk-card">
       <div class="sk-left">
@@ -783,14 +870,82 @@
     }
   });
 
+  /* ── SOURCE TABS ────────────────────────────────── */
+  let currentSource = 'maps';
+
+  function setSource(src) {
+    currentSource = src;
+    document.querySelectorAll('.source-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.source === src));
+    document.querySelectorAll('.source-section').forEach(s =>
+      s.classList.toggle('active', s.id === 'section-' + src));
+    const labels = { maps: 'Search Leads', instagram: 'Scrape Instagram', b2b: 'Find B2B Leads' };
+    document.getElementById('btnLabel').textContent = labels[src] || 'Search Leads';
+  }
+
   /* ── FORM SUBMIT ────────────────────────────────── */
   document.getElementById('searchForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const bt = document.getElementById('businessType').value.trim();
-    const loc = document.getElementById('location').value.trim();
-    if (!bt || !loc) return;
-    await doSearch(bt, loc, chosenLimit);
+    if (currentSource === 'instagram') {
+      const tags = document.getElementById('igHashtags').value.trim();
+      if (!tags) return;
+      await doApifySearch('instagram', { hashtags: tags, limit: chosenLimit });
+    } else if (currentSource === 'b2b') {
+      const query = document.getElementById('b2bQuery').value.trim();
+      const loc   = document.getElementById('b2bLocation').value.trim();
+      if (!query) return;
+      await doApifySearch('b2b', { query, location: loc, limit: chosenLimit });
+    } else {
+      const bt  = document.getElementById('businessType').value.trim();
+      const loc = document.getElementById('location').value.trim();
+      if (!bt || !loc) return;
+      await doSearch(bt, loc, chosenLimit);
+    }
   });
+
+  /* ── APIFY SEARCH ───────────────────────────────── */
+  async function doApifySearch(type, params) {
+    const labels = { maps: 'Search Leads', instagram: 'Scrape Instagram', b2b: 'Find B2B Leads' };
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    document.getElementById('btnLabel').textContent = 'Running…';
+
+    const endpoint = type === 'instagram' ? '/leads/apify/instagram' : '/leads/apify/b2b';
+    const msgs = type === 'instagram'
+      ? ['Starting Instagram scraper…', 'Scraping profiles…', 'Extracting contact info…', 'Almost done…']
+      : ['Starting B2B finder…', 'Searching for leads…', 'Enriching contacts…', 'Almost done…'];
+
+    document.getElementById('loadingTitle').textContent = msgs[0];
+    document.getElementById('loadingSub').textContent = 'Apify is running — this may take 30–120 seconds';
+    show('loading');
+
+    let mi = 0;
+    const ticker = setInterval(() => {
+      mi = (mi + 1) % msgs.length;
+      const el = document.getElementById('loadingTitle');
+      if (el) el.textContent = msgs[mi];
+    }, 6000);
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      });
+      const data = await res.json();
+      clearInterval(ticker);
+      if (!res.ok) throw new Error(data.error || 'Apify run failed');
+      leads = data.leads || [];
+      renderResults(data);
+    } catch (err) {
+      clearInterval(ticker);
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btnLabel').textContent = labels[currentSource] || 'Search Leads';
+      document.getElementById('loadingSub').textContent = 'Gathering and enriching results — this takes 10–25 seconds';
+    }
+  }
 
   /* ── SEARCH ─────────────────────────────────────── */
   async function doSearch(bt, loc, limit) {
@@ -865,8 +1020,163 @@
     show('results');
   }
 
-  /* ── RENDER CARD ────────────────────────────────── */
+  /* ── RENDER CARD (dispatcher) ───────────────────── */
   function renderCard(lead) {
+    if (lead.source === 'instagram') return renderInstagramCard(lead);
+    if (lead.source === 'b2b_finder') return renderB2BCard(lead);
+    return renderMapsCard(lead);
+  }
+
+  /* ── INSTAGRAM CARD ──────────────────────────────── */
+  function renderInstagramCard(lead) {
+    const idx = Math.random().toString(36).slice(2);
+    const username = lead.username || '';
+    const profileUrl = lead.profile_url ||
+      (username ? `https://www.instagram.com/${username}/` : '');
+
+    const handleHtml = username
+      ? `<div class="insta-handle"><a href="${a(profileUrl)}" target="_blank" rel="noopener">@${h(username)}</a></div>`
+      : '';
+
+    const followers = lead.followers
+      ? `<div class="follower-stat"><strong>${Number(lead.followers).toLocaleString()}</strong> followers</div>`
+      : '';
+
+    const phoneHtml = lead.phone
+      ? `<div class="co-phone" style="margin-top:10px;"><span class="ico">📞</span>${h(lead.phone)}</div>`
+      : '';
+
+    const emailEntries = [];
+    if (lead.email) {
+      emailEntries.push(`<div class="email-entry">
+        <span class="email-who">Direct</span>
+        <span class="email-addr">${h(lead.email)}</span>
+        <button class="copy-btn" onclick="copyIt(${JSON.stringify(lead.email)},this)">Copy</button>
+      </div>`);
+    }
+    (lead.contacts||[]).forEach(c => {
+      if (c.email && c.email !== lead.email) {
+        emailEntries.push(`<div class="email-entry">
+          <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}</span>
+          <span class="email-addr">${h(c.email)}</span>
+          <button class="copy-btn" onclick="copyIt(${JSON.stringify(c.email)},this)">Copy</button>
+        </div>`);
+      }
+    });
+    const emailsHtml = emailEntries.length
+      ? `<hr class="divider"><div class="eyebrow">Contact Emails</div><div class="email-block">${emailEntries.join('')}</div>`
+      : '<div class="no-email" style="margin-top:10px;">No email found in profile</div>';
+
+    const webHtml = lead.website
+      ? `<div class="detail-row"><span class="d-ico">🌐</span><a href="${a(lead.website)}" target="_blank" rel="noopener">${h(lead.website.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a></div>`
+      : '';
+
+    const bioHtml = lead.bio
+      ? `<div class="insta-bio">${h(lead.bio.slice(0,200))}${lead.bio.length>200?'…':''}</div>`
+      : '';
+
+    return `
+    <article class="lead-card" id="card-${idx}">
+      <div class="lead-left">
+        <h2 class="co-name">${h(lead.name||username||'Unknown')}</h2>
+        ${handleHtml}
+        ${followers}
+        ${phoneHtml}
+        <hr class="divider" style="margin-top:12px;">
+        <div class="eyebrow">Source</div>
+        <span class="source-badge instagram">📸 Instagram</span>
+      </div>
+      <div class="lead-right">
+        <div class="detail-block">${webHtml}</div>
+        ${bioHtml}
+        ${emailsHtml}
+        <hr class="divider" style="margin-top:16px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="card-monday-btn" id="mon-${idx}"
+            onclick="sendOneToMonday(${JSON.stringify(JSON.stringify(lead))},'mon-${idx}')">
+            ⬡ Send to Monday.com
+          </button>
+          <button class="card-ri-btn" id="ri-${idx}"
+            onclick="openRiModal('one',${JSON.stringify(JSON.stringify(lead))},'ri-${idx}')">
+            ✉ Send to ReachInbox
+          </button>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  /* ── B2B CARD ────────────────────────────────────── */
+  function renderB2BCard(lead) {
+    const idx = Math.random().toString(36).slice(2);
+    const contacts = lead.contacts || [];
+
+    const namesHtml = contacts.length
+      ? contacts.map(c => `
+          <div class="contact-item">
+            <div class="contact-name">
+              ${h(c.first_name||'')} ${h(c.last_name||'')}
+              ${c.linkedin_url ? `<a href="${a(c.linkedin_url)}" target="_blank" rel="noopener" class="li-link">in</a>` : ''}
+            </div>
+            ${c.position ? `<div class="contact-title">${h(c.position)}</div>` : ''}
+          </div>`).join('')
+      : '<div class="no-contacts">No contacts found</div>';
+
+    const phoneHtml = lead.phone
+      ? `<div class="co-phone"><span class="ico">📞</span>${h(lead.phone)}</div>`
+      : '';
+
+    const emailEntries = [];
+    contacts.forEach(c => {
+      if (c.email) {
+        emailEntries.push(`<div class="email-entry">
+          <span class="email-who">${h(c.first_name||'')} ${h(c.last_name||'')}</span>
+          <span class="email-addr">${h(c.email)}</span>
+          <button class="copy-btn" onclick="copyIt(${JSON.stringify(c.email)},this)">Copy</button>
+        </div>`);
+      }
+    });
+    const emailsHtml = emailEntries.length
+      ? `<hr class="divider"><div class="eyebrow">Contact Emails</div><div class="email-block">${emailEntries.join('')}</div>`
+      : '';
+
+    const webHtml = lead.website
+      ? `<div class="detail-row"><span class="d-ico">🌐</span><a href="${a(lead.website)}" target="_blank" rel="noopener">${h(lead.website.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a></div>`
+      : '';
+    const addrHtml = lead.address
+      ? `<div class="detail-row"><span class="d-ico">📍</span><span>${h(lead.address)}</span></div>`
+      : '';
+
+    return `
+    <article class="lead-card" id="card-${idx}">
+      <div class="lead-left">
+        <h2 class="co-name">${h(lead.name||'Unknown')}</h2>
+        ${phoneHtml}
+        <hr class="divider">
+        <div class="eyebrow">Contacts</div>
+        ${namesHtml}
+        <hr class="divider" style="margin-top:12px;">
+        <span class="source-badge b2b">B2B Finder</span>
+      </div>
+      <div class="lead-right">
+        <div class="detail-block">${addrHtml}${webHtml}</div>
+        ${emailsHtml}
+        <hr class="divider" style="margin-top:16px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="card-monday-btn" id="mon-${idx}"
+            onclick="sendOneToMonday(${JSON.stringify(JSON.stringify(lead))},'mon-${idx}')">
+            ⬡ Send to Monday.com
+          </button>
+          <button class="card-ri-btn" id="ri-${idx}"
+            onclick="openRiModal('one',${JSON.stringify(JSON.stringify(lead))},'ri-${idx}')">
+            ✉ Send to ReachInbox
+          </button>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  /* ── MAPS CARD (original renderCard) ────────────── */
+  function renderMapsCard(lead) {
     const contacts = lead.contacts || [];
 
     /* ─ left ─ */
@@ -1048,34 +1358,63 @@
   /* ── EXPORT ─────────────────────────────────────── */
   function exportCSV() {
     if (!leads.length) return;
-    const cols = ['Company','Google Rank','Phone','Website','Address','Google Rating','Yelp Rating','Yelp Reviews','Status','Contact Name','Title','Email','Verified','Business Email'];
-    const rows = [cols];
-    leads.forEach(l => {
-      const cs = l.contacts || [];
-      const bizEmail = l.business_email || '';
-      const yelpRating = (l.yelp && l.yelp.rating) ? l.yelp.rating : '';
-      const yelpReviews = (l.yelp && l.yelp.review_count) ? l.yelp.review_count : '';
-      const rank = l.google_rank || '';
-      if (!cs.length) {
-        rows.push([l.name||'',rank,l.phone||'',l.website||'',l.address||'',l.rating||'',yelpRating,yelpReviews,l.business_status||'','','','','',bizEmail]);
-      } else {
-        cs.forEach(c => {
-          rows.push([
+    const src = leads[0]?.source || 'maps';
+
+    let cols, rows;
+    if (src === 'instagram') {
+      cols = ['Name','Username','Profile URL','Followers','Phone','Email','Website','Bio'];
+      rows = [cols];
+      leads.forEach(l => {
+        rows.push([
+          l.name||'', l.username||'', l.profile_url||'',
+          l.followers||'', l.phone||'', l.email||'',
+          l.website||'', (l.bio||'').replace(/\n/g,' ')
+        ]);
+      });
+    } else if (src === 'b2b_finder') {
+      cols = ['Company','Phone','Website','Address','Contact Name','Title','Email','LinkedIn'];
+      rows = [cols];
+      leads.forEach(l => {
+        const cs = l.contacts || [];
+        if (!cs.length) {
+          rows.push([l.name||'',l.phone||'',l.website||'',l.address||'','','','','']);
+        } else {
+          cs.forEach(c => rows.push([
+            l.name||'', l.phone||'', l.website||'', l.address||'',
+            ((c.first_name||'')+' '+(c.last_name||'')).trim(),
+            c.position||'', c.email||'', c.linkedin_url||''
+          ]));
+        }
+      });
+    } else {
+      cols = ['Company','Google Rank','Phone','Website','Address','Google Rating','Yelp Rating','Yelp Reviews','Status','Contact Name','Title','Email','Verified','Business Email'];
+      rows = [cols];
+      leads.forEach(l => {
+        const cs = l.contacts || [];
+        const bizEmail = l.business_email || '';
+        const yelpRating = (l.yelp && l.yelp.rating) ? l.yelp.rating : '';
+        const yelpReviews = (l.yelp && l.yelp.review_count) ? l.yelp.review_count : '';
+        const rank = l.google_rank || '';
+        if (!cs.length) {
+          rows.push([l.name||'',rank,l.phone||'',l.website||'',l.address||'',l.rating||'',yelpRating,yelpReviews,l.business_status||'','','','','',bizEmail]);
+        } else {
+          cs.forEach(c => rows.push([
             l.name||'',rank,l.phone||'',l.website||'',l.address||'',
             l.rating||'',yelpRating,yelpReviews,l.business_status||'',
             ((c.first_name||'')+' '+(c.last_name||'')).trim(),
             c.position||'', c.email||'',
             c.verification_status === 'valid' ? 'Yes' : 'No',
             bizEmail
-          ]);
-        });
-      }
-    });
+          ]));
+        }
+      });
+    }
+
     const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-    a.download = 'leads-' + Date.now() + '.csv';
-    a.click();
+    const el = document.createElement('a');
+    el.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    el.download = `leads-${src}-${Date.now()}.csv`;
+    el.click();
   }
 
   /* ── REACHINBOX ─────────────────────────────────── */

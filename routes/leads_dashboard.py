@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, Response
 from services.leads_service import run_leads_search
 from services.monday_service import get_or_create_board, push_lead
 from services.reachinbox_service import get_campaigns, add_leads_to_campaign
+from services.apify_service import run_instagram_scraper, run_b2b_finder
 import logging
 import os
 
@@ -112,6 +113,53 @@ def reachinbox_campaigns():
         return jsonify({"campaigns": campaigns}), 200
     except Exception as e:
         logger.error(f"ReachInbox campaign fetch failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@leads_dashboard_bp.route('/leads/apify/instagram', methods=['POST'])
+def apify_instagram():
+    data = request.get_json() or {}
+    hashtags = data.get('hashtags', '')
+    limit = min(int(data.get('limit', 20)), 100)
+
+    if not hashtags:
+        return jsonify({"error": "hashtags is required"}), 400
+
+    api_token = os.environ.get('APIFY_API_TOKEN')
+    if not api_token:
+        return jsonify({"error": "APIFY_API_TOKEN is not configured"}), 500
+
+    try:
+        result = run_instagram_scraper(hashtags, limit, api_token)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Apify Instagram scraper failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@leads_dashboard_bp.route('/leads/apify/b2b', methods=['POST'])
+def apify_b2b():
+    data = request.get_json() or {}
+    query = data.get('query', '').strip()
+    location = data.get('location', '').strip()
+    limit = min(int(data.get('limit', 20)), 100)
+
+    if not query:
+        return jsonify({"error": "query is required"}), 400
+
+    api_token = os.environ.get('APIFY_API_TOKEN')
+    if not api_token:
+        return jsonify({"error": "APIFY_API_TOKEN is not configured"}), 500
+
+    try:
+        result = run_b2b_finder(query, location, limit, api_token)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Apify B2B finder failed: {e}")
         return jsonify({"error": str(e)}), 500
 
 
