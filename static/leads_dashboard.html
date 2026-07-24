@@ -685,11 +685,18 @@
       </div>
     </div>
 
-    <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:14px;margin-bottom:2px;">
-      <input type="checkbox" id="emailOnlyToggle" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;"
-             onchange="refilterLeads()">
-      <span style="font-size:12px;font-weight:600;color:var(--sidebar-text);">Emails only</span>
-    </label>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;margin-bottom:2px;">
+      <label style="display:flex;align-items:center;gap:9px;cursor:pointer;">
+        <input type="checkbox" id="emailOnlyToggle" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;"
+               onchange="refilterLeads()">
+        <span style="font-size:12px;font-weight:600;color:var(--sidebar-text);">Emails only</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:9px;cursor:pointer;">
+        <input type="checkbox" id="phoneOnlyToggle" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;"
+               onchange="refilterLeads()">
+        <span style="font-size:12px;font-weight:600;color:var(--sidebar-text);">Phone required</span>
+      </label>
+    </div>
 
     <button type="submit" class="search-btn" id="searchBtn">
       <span id="btnLabel">Search Leads</span>
@@ -1016,6 +1023,17 @@
     return (lead.contacts || []).some(c => c.email);
   }
 
+  function hasPhone(lead) {
+    if (lead.phone) return true;
+    return (lead.contacts || []).some(c => c.phone);
+  }
+
+  function applyFilters(ls) {
+    const emailOnly  = document.getElementById('emailOnlyToggle').checked;
+    const phoneOnly  = document.getElementById('phoneOnlyToggle').checked;
+    return ls.filter(l => (!emailOnly || hasEmail(l)) && (!phoneOnly || hasPhone(l)));
+  }
+
   function renderResults(data) {
     const { leads: ls, total, contacts_found, query } = data;
 
@@ -1024,12 +1042,12 @@
     document.getElementById('sQuery').textContent = query;
     document.getElementById('sidebarStats').style.display = '';
 
-    const emailOnly = document.getElementById('emailOnlyToggle').checked;
-    const visible = emailOnly ? ls.filter(hasEmail) : ls;
+    const visible = applyFilters(ls);
+    const hidden  = ls.length - visible.length;
 
     document.getElementById('resultsTitle').textContent =
       visible.length + ' lead' + (visible.length !== 1 ? 's' : '') + ' found'
-      + (emailOnly && visible.length < total ? ` (${total - visible.length} hidden — no email)` : '');
+      + (hidden > 0 ? ` (${hidden} hidden — missing required field)` : '');
     document.getElementById('resultsSub').textContent = query;
 
     document.getElementById('leadsList').innerHTML = visible.map(renderCard).join('');
@@ -1038,11 +1056,11 @@
 
   function refilterLeads() {
     if (!leads.length) return;
-    const emailOnly = document.getElementById('emailOnlyToggle').checked;
-    const visible = emailOnly ? leads.filter(hasEmail) : leads;
+    const visible = applyFilters(leads);
+    const hidden  = leads.length - visible.length;
     document.getElementById('resultsTitle').textContent =
       visible.length + ' lead' + (visible.length !== 1 ? 's' : '') + ' found'
-      + (emailOnly && visible.length < leads.length ? ` (${leads.length - visible.length} hidden — no email)` : '');
+      + (hidden > 0 ? ` (${hidden} hidden — missing required field)` : '');
     document.getElementById('leadsList').innerHTML = visible.map(renderCard).join('');
   }
 
