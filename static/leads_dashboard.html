@@ -26,25 +26,31 @@
       --ok-bg:         #ECFDF5;
       --warn:          #D97706;
       --shadow:        0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --input-border:  rgba(255,255,255,.15);
+      --input-bg:      rgba(255,255,255,.06);
+      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.22);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg:           #080D1A;
-        --surface:      #0E1524;
-        --sidebar-bg:   #050A14;
-        --sidebar-surf: #0B1220;
-        --sidebar-text: #4A6080;
-        --sidebar-head: #E8EEFF;
-        --accent-soft:  #131D42;
-        --accent-txt:   #7B98FF;
-        --text-1:       #E4EAFF;
-        --text-2:       #6B83A4;
-        --text-3:       #3A4F6A;
-        --border:       #182238;
-        --left-bg:      #0B1220;
-        --ok-bg:        #022C22;
-        --shadow:       0 1px 3px rgba(0,0,0,.5);
+        --bg:            #080D1A;
+        --surface:       #0E1524;
+        --sidebar-bg:    #060C18;
+        --sidebar-surf:  #0F1C2E;
+        --sidebar-text:  #7298BA;
+        --sidebar-head:  #EEF3FF;
+        --accent-soft:   #131D42;
+        --accent-txt:    #7B98FF;
+        --text-1:        #E4EAFF;
+        --text-2:        #6B83A4;
+        --text-3:        #3A4F6A;
+        --border:        #1C2D44;
+        --left-bg:       #0B1220;
+        --ok-bg:         #022C22;
+        --shadow:        0 1px 3px rgba(0,0,0,.5);
+        --input-border:  rgba(255,255,255,.18);
+        --input-bg:      rgba(255,255,255,.05);
+        --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.28);
       }
     }
 
@@ -53,12 +59,16 @@
       --sidebar-text:#6B83A4; --sidebar-head:#FFF; --accent-soft:#EEF1FF; --accent-txt:#4361EE;
       --text-1:#111827; --text-2:#6B7280; --text-3:#9CA3AF;
       --border:#E5E7EB; --left-bg:#F7F8FC; --ok-bg:#ECFDF5; --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+      --input-border: rgba(255,255,255,.15); --input-bg: rgba(255,255,255,.06);
+      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.22);
     }
     :root[data-theme="dark"] {
-      --bg:#080D1A; --surface:#0E1524; --sidebar-bg:#050A14; --sidebar-surf:#0B1220;
-      --sidebar-text:#4A6080; --sidebar-head:#E8EEFF; --accent-soft:#131D42; --accent-txt:#7B98FF;
+      --bg:#080D1A; --surface:#0E1524; --sidebar-bg:#060C18; --sidebar-surf:#0F1C2E;
+      --sidebar-text:#7298BA; --sidebar-head:#EEF3FF; --accent-soft:#131D42; --accent-txt:#7B98FF;
       --text-1:#E4EAFF; --text-2:#6B83A4; --text-3:#3A4F6A;
-      --border:#182238; --left-bg:#0B1220; --ok-bg:#022C22; --shadow:0 1px 3px rgba(0,0,0,.5);
+      --border:#1C2D44; --left-bg:#0B1220; --ok-bg:#022C22; --shadow:0 1px 3px rgba(0,0,0,.5);
+      --input-border: rgba(255,255,255,.18); --input-bg: rgba(255,255,255,.05);
+      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.28);
     }
 
     /* ── RESET ───────────────────────────────────────────── */
@@ -90,42 +100,48 @@
     .logo-name { font-size: 15px; font-weight: 700; color: var(--sidebar-head); letter-spacing: -.02em; }
 
     .form-label {
-      display: block; font-size: 11px; font-weight: 600;
-      letter-spacing: .07em; text-transform: uppercase;
-      color: var(--sidebar-text); margin-bottom: 7px;
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--sidebar-head); opacity: .75; margin-bottom: 8px;
     }
-    .form-group { margin-bottom: 18px; }
+    .form-group { margin-bottom: 20px; }
     .form-input {
-      width: 100%; background: var(--sidebar-surf);
-      border: 1px solid rgba(255,255,255,.07); border-radius: 8px;
-      padding: 9px 12px; color: var(--sidebar-head);
+      width: 100%; background: var(--input-bg, rgba(255,255,255,.05));
+      border: 1px solid var(--input-border, rgba(255,255,255,.18)); border-radius: 8px;
+      padding: 10px 13px; color: var(--sidebar-head);
       font-size: 14px; font-family: inherit; outline: none;
-      transition: border-color .15s;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .form-input::placeholder { color: rgba(255,255,255,.18); }
-    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: rgba(255,255,255,.32); }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: var(--input-focus-shadow, 0 0 0 3px rgba(67,97,238,.28));
+    }
 
     .presets { display: flex; gap: 7px; margin-bottom: 8px; }
     .preset-btn {
       flex: 1; padding: 8px 0; text-align: center;
-      background: var(--sidebar-surf);
-      border: 1px solid rgba(255,255,255,.07); border-radius: 8px;
-      color: var(--sidebar-text); font-size: 13px; font-weight: 600;
+      background: var(--input-bg, rgba(255,255,255,.05));
+      border: 1px solid var(--input-border, rgba(255,255,255,.18)); border-radius: 8px;
+      color: rgba(255,255,255,.6); font-size: 13px; font-weight: 700;
       cursor: pointer; font-family: inherit; transition: all .15s;
     }
-    .preset-btn:hover { color: #fff; border-color: rgba(255,255,255,.2); }
-    .preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .preset-btn:hover { color: #fff; border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.08); }
+    .preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(67,97,238,.4); }
 
     .custom-limit-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-    .custom-limit-label { font-size: 11px; color: var(--sidebar-text); white-space: nowrap; }
+    .custom-limit-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.5); white-space: nowrap; }
     .custom-limit-input {
-      width: 60px; background: var(--sidebar-surf);
-      border: 1px solid rgba(255,255,255,.07); border-radius: 6px;
-      padding: 5px 8px; color: var(--sidebar-head);
+      width: 60px; background: var(--input-bg, rgba(255,255,255,.05));
+      border: 1px solid var(--input-border, rgba(255,255,255,.18)); border-radius: 6px;
+      padding: 6px 8px; color: var(--sidebar-head);
       font-size: 13px; font-family: inherit; outline: none;
-      text-align: center;
+      text-align: center; transition: border-color .15s, box-shadow .15s;
     }
-    .custom-limit-input:focus { border-color: var(--accent); }
+    .custom-limit-input:focus {
+      border-color: var(--accent);
+      box-shadow: var(--input-focus-shadow, 0 0 0 3px rgba(67,97,238,.28));
+    }
 
     .search-btn {
       width: 100%; background: var(--accent); color: #fff;
@@ -141,7 +157,7 @@
 
     .sidebar-stats {
       margin-top: auto; padding-top: 22px;
-      border-top: 1px solid rgba(255,255,255,.06);
+      border-top: 1px solid rgba(255,255,255,.12);
     }
     .stat-row {
       display: flex; justify-content: space-between;
@@ -161,9 +177,9 @@
     /* ── FUNNEL LEADS ───────────────────────────────────── */
     .funnel-pill {
       margin-top: 18px; padding: 14px 15px;
-      border-radius: 9px; border: 1px solid rgba(255,255,255,.07);
-      background: var(--sidebar-surf); cursor: pointer;
-      transition: border-color .15s;
+      border-radius: 9px; border: 1px solid rgba(255,255,255,.15);
+      background: var(--input-bg, rgba(255,255,255,.05)); cursor: pointer;
+      transition: border-color .15s, background .15s;
     }
     .funnel-pill:hover { border-color: rgba(255,255,255,.18); }
     .funnel-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
@@ -500,17 +516,19 @@
     /* ── SOURCE TABS ────────────────────────────────── */
     .source-tabs {
       display: flex; gap: 3px; margin-bottom: 22px;
-      background: var(--sidebar-surf); border-radius: 9px; padding: 4px;
+      background: var(--input-bg, rgba(255,255,255,.05));
+      border: 1px solid var(--input-border, rgba(255,255,255,.18));
+      border-radius: 9px; padding: 4px;
     }
     .source-tab {
       flex: 1; padding: 7px 2px; text-align: center;
       background: transparent; border: none; border-radius: 6px;
-      color: var(--sidebar-text); font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,.55); font-size: 11px; font-weight: 700;
       letter-spacing: .02em; cursor: pointer; font-family: inherit;
       transition: all .15s; white-space: nowrap;
     }
-    .source-tab.active { background: var(--accent); color: #fff; }
-    .source-tab:not(.active):hover { color: var(--sidebar-head); }
+    .source-tab.active { background: var(--accent); color: #fff; box-shadow: 0 2px 6px rgba(67,97,238,.35); }
+    .source-tab:not(.active):hover { color: #fff; background: rgba(255,255,255,.07); }
 
     .source-section { display: none; }
     .source-section.active { display: block; }
