@@ -5,70 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lead Finder</title>
   <style>
-    /* ── TOKENS ─────────────────────────────────────────── */
+    /* ── TOKENS — Pipedrive palette ─────────────────────── */
     :root {
-      --bg:            #ECEEF5;
+      /* Light mode (default) — matches Pipedrive's marketing site */
+      --bg:            #F5F7FA;
       --surface:       #FFFFFF;
-      --sidebar-bg:    #0B1220;
-      --sidebar-surf:  #131E30;
-      --sidebar-text:  #6B83A4;
+      --sidebar-bg:    #1A2744;
+      --sidebar-surf:  #223260;
+      --sidebar-text:  #8BAAC8;
       --sidebar-head:  #FFFFFF;
-      --accent:        #4361EE;
-      --accent-h:      #3150D9;
-      --accent-soft:   #EEF1FF;
-      --accent-txt:    #4361EE;
-      --text-1:        #111827;
+      --accent:        #26C981;
+      --accent-h:      #1DB972;
+      --accent-soft:   #E6FBF2;
+      --accent-txt:    #178A55;
+      --text-1:        #1A2234;
       --text-2:        #6B7280;
       --text-3:        #9CA3AF;
-      --border:        #E5E7EB;
-      --left-bg:       #F7F8FC;
+      --border:        #E2E8F0;
+      --left-bg:       #F0F4F8;
       --ok:            #059669;
       --ok-bg:         #ECFDF5;
       --warn:          #D97706;
-      --shadow:        0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-      --input-border:  rgba(255,255,255,.15);
-      --input-bg:      rgba(255,255,255,.06);
-      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.22);
+      --shadow:        0 1px 4px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --card-bg:       #FFFFFF;
+      --input-border:  rgba(255,255,255,.22);
+      --input-bg:      rgba(255,255,255,.09);
+      --input-focus-shadow: 0 0 0 3px rgba(38,201,129,.32);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg:            #080D1A;
-        --surface:       #0E1524;
-        --sidebar-bg:    #060C18;
-        --sidebar-surf:  #0F1C2E;
-        --sidebar-text:  #7298BA;
+        /* Dark mode — navy sidebar stays, main area goes deep navy */
+        --bg:            #0C1829;
+        --surface:       #112035;
+        --sidebar-bg:    #1A2744;
+        --sidebar-surf:  #223260;
+        --sidebar-text:  #8BAAC8;
         --sidebar-head:  #EEF3FF;
-        --accent-soft:   #131D42;
-        --accent-txt:    #7B98FF;
-        --text-1:        #E4EAFF;
+        --accent-soft:   #092B1C;
+        --accent-txt:    #26C981;
+        --text-1:        #E2EAF8;
         --text-2:        #6B83A4;
         --text-3:        #3A4F6A;
-        --border:        #1C2D44;
-        --left-bg:       #0B1220;
+        --border:        #1A2E45;
+        --left-bg:       #0F1E30;
         --ok-bg:         #022C22;
         --shadow:        0 1px 3px rgba(0,0,0,.5);
+        --card-bg:       #112035;
         --input-border:  rgba(255,255,255,.18);
-        --input-bg:      rgba(255,255,255,.05);
-        --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.28);
+        --input-bg:      rgba(255,255,255,.06);
+        --input-focus-shadow: 0 0 0 3px rgba(38,201,129,.3);
       }
     }
 
     :root[data-theme="light"] {
-      --bg:#ECEEF5; --surface:#FFF; --sidebar-bg:#0B1220; --sidebar-surf:#131E30;
-      --sidebar-text:#6B83A4; --sidebar-head:#FFF; --accent-soft:#EEF1FF; --accent-txt:#4361EE;
-      --text-1:#111827; --text-2:#6B7280; --text-3:#9CA3AF;
-      --border:#E5E7EB; --left-bg:#F7F8FC; --ok-bg:#ECFDF5; --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
-      --input-border: rgba(255,255,255,.15); --input-bg: rgba(255,255,255,.06);
-      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.22);
+      --bg:#F5F7FA; --surface:#FFFFFF; --sidebar-bg:#1A2744; --sidebar-surf:#223260;
+      --sidebar-text:#8BAAC8; --sidebar-head:#FFFFFF; --accent-soft:#E6FBF2; --accent-txt:#178A55;
+      --text-1:#1A2234; --text-2:#6B7280; --text-3:#9CA3AF;
+      --border:#E2E8F0; --left-bg:#F0F4F8; --ok-bg:#ECFDF5; --card-bg:#FFFFFF;
+      --shadow:0 1px 4px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+      --input-border:rgba(255,255,255,.22); --input-bg:rgba(255,255,255,.09);
+      --input-focus-shadow:0 0 0 3px rgba(38,201,129,.32);
     }
     :root[data-theme="dark"] {
-      --bg:#080D1A; --surface:#0E1524; --sidebar-bg:#060C18; --sidebar-surf:#0F1C2E;
-      --sidebar-text:#7298BA; --sidebar-head:#EEF3FF; --accent-soft:#131D42; --accent-txt:#7B98FF;
-      --text-1:#E4EAFF; --text-2:#6B83A4; --text-3:#3A4F6A;
-      --border:#1C2D44; --left-bg:#0B1220; --ok-bg:#022C22; --shadow:0 1px 3px rgba(0,0,0,.5);
-      --input-border: rgba(255,255,255,.18); --input-bg: rgba(255,255,255,.05);
-      --input-focus-shadow: 0 0 0 3px rgba(67,97,238,.28);
+      --bg:#0C1829; --surface:#112035; --sidebar-bg:#1A2744; --sidebar-surf:#223260;
+      --sidebar-text:#8BAAC8; --sidebar-head:#EEF3FF; --accent-soft:#092B1C; --accent-txt:#26C981;
+      --text-1:#E2EAF8; --text-2:#6B83A4; --text-3:#3A4F6A;
+      --border:#1A2E45; --left-bg:#0F1E30; --ok-bg:#022C22; --card-bg:#112035;
+      --shadow:0 1px 3px rgba(0,0,0,.5);
+      --input-border:rgba(255,255,255,.18); --input-bg:rgba(255,255,255,.06);
+      --input-focus-shadow:0 0 0 3px rgba(38,201,129,.3);
     }
 
     /* ── RESET ───────────────────────────────────────────── */
