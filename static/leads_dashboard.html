@@ -685,6 +685,12 @@
       </div>
     </div>
 
+    <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:14px;margin-bottom:2px;">
+      <input type="checkbox" id="emailOnlyToggle" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;"
+             onchange="refilterLeads()">
+      <span style="font-size:12px;font-weight:600;color:var(--sidebar-text);">Emails only</span>
+    </label>
+
     <button type="submit" class="search-btn" id="searchBtn">
       <span id="btnLabel">Search Leads</span>
     </button>
@@ -1004,6 +1010,12 @@
   }
 
   /* ── RENDER RESULTS ─────────────────────────────── */
+  function hasEmail(lead) {
+    if (lead.email) return true;
+    if (lead.business_email) return true;
+    return (lead.contacts || []).some(c => c.email);
+  }
+
   function renderResults(data) {
     const { leads: ls, total, contacts_found, query } = data;
 
@@ -1012,12 +1024,26 @@
     document.getElementById('sQuery').textContent = query;
     document.getElementById('sidebarStats').style.display = '';
 
+    const emailOnly = document.getElementById('emailOnlyToggle').checked;
+    const visible = emailOnly ? ls.filter(hasEmail) : ls;
+
     document.getElementById('resultsTitle').textContent =
-      total + ' lead' + (total !== 1 ? 's' : '') + ' found';
+      visible.length + ' lead' + (visible.length !== 1 ? 's' : '') + ' found'
+      + (emailOnly && visible.length < total ? ` (${total - visible.length} hidden — no email)` : '');
     document.getElementById('resultsSub').textContent = query;
 
-    document.getElementById('leadsList').innerHTML = ls.map(renderCard).join('');
+    document.getElementById('leadsList').innerHTML = visible.map(renderCard).join('');
     show('results');
+  }
+
+  function refilterLeads() {
+    if (!leads.length) return;
+    const emailOnly = document.getElementById('emailOnlyToggle').checked;
+    const visible = emailOnly ? leads.filter(hasEmail) : leads;
+    document.getElementById('resultsTitle').textContent =
+      visible.length + ' lead' + (visible.length !== 1 ? 's' : '') + ' found'
+      + (emailOnly && visible.length < leads.length ? ` (${leads.length - visible.length} hidden — no email)` : '');
+    document.getElementById('leadsList').innerHTML = visible.map(renderCard).join('');
   }
 
   /* ── RENDER CARD (dispatcher) ───────────────────── */
